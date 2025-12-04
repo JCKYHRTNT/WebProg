@@ -34,7 +34,9 @@
 
             <div class="d-flex flex-wrap" style="gap:0.5rem;">
 
-                @php $isAllActive = !$category; @endphp
+                @php
+                    $isAllActive = !$categoryId;
+                @endphp
 
                 {{-- All --}}
                 <a
@@ -50,12 +52,13 @@
                     All
                 </a>
 
-                {{-- Recent / default categories (max 3) --}}
+                {{-- Recent/default categories (max 3) --}}
                 @foreach($recentCategories as $cat)
                     @php
-                        $isActive = $category === $cat;
-                        $catUrl = url('/?category='.$cat.($query ? '&q='.urlencode($query) : ''));
+                        $isActive = $categoryId === $cat['id'];
+                        $catUrl = url('/?category='.$cat['id'].($query ? '&q='.urlencode($query) : ''));
                     @endphp
+
                     <a
                         href="{{ $catUrl }}"
                         class="tb-pill-link"
@@ -66,18 +69,21 @@
                             padding:0.4rem 0.9rem;
                         "
                     >
-                        {{ ucfirst($cat) }}
+                        {{ ucfirst($cat['name']) }}
                     </a>
                 @endforeach
             </div>
         </div>
 
-        @if($category || $query)
+        @if($categoryId || $query)
             <div style="font-size:0.8rem;color:var(--tb-gray-text);">
-                @if($category)
-                    <span>Filter: <strong>{{ ucfirst($category) }}</strong></span>
+                @if($categoryId)
+                    <span>
+                        Filter:
+                        <strong>{{ ucfirst($categoryNames[$categoryId] ?? 'Unknown') }}</strong>
+                    </span>
                 @endif
-                @if($category && $query)
+                @if($categoryId && $query)
                     <span> · </span>
                 @endif
                 @if($query)
@@ -113,10 +119,20 @@
 
                             <div class="p-2 p-md-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="badge rounded-pill"
-                                          style="background:#facc15;color:#111827;font-size:0.7rem;">
-                                        {{ ucfirst($product['category']) }}
-                                    </span>
+                                    @php
+                                        $catId = $product['category_id'];
+                                        $catUrl = url('/?category='.$catId.($query ? '&q='.urlencode($query) : ''));
+                                        $catLabel = ucfirst($categoryNames[$catId] ?? 'Unknown');
+                                    @endphp
+
+                                    {{-- Clickable category badge (filters by that category) --}}
+                                    <a
+                                        href="{{ $catUrl }}"
+                                        class="badge rounded-pill"
+                                        style="background:#facc15;color:#111827;font-size:0.7rem;text-decoration:none;cursor:pointer;"
+                                    >
+                                        {{ $catLabel }}
+                                    </a>
                                 </div>
 
                                 {{-- Clickable name --}}
