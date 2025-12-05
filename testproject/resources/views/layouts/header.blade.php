@@ -18,12 +18,11 @@
             <div class="d-flex flex-grow-1 align-items-center" style="gap:0.5rem;max-width:620px;min-width:260px;">
 
                 {{-- Search --}}
-                <form
-                    action="{{ url('/') }}"
-                    method="GET"
-                    class="d-flex flex-grow-1"
-                    style="gap:0.4rem;"
-                >
+                <form action="{{ url('/') }}" method="GET" class="d-flex flex-grow-1" style="gap:0.4rem;">
+                    @if(request('category'))
+                        <input type="hidden" name="category" value="{{ request('category') }}">
+                    @endif
+
                     <input
                         type="text"
                         name="q"
@@ -41,6 +40,7 @@
                         >
                     </button>
                 </form>
+
 
                 {{-- Filter --}}
                 <div class="dropdown">
@@ -61,8 +61,19 @@
                     </button>
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                        <li><a class="dropdown-item" href="#">Blank 1</a></li>
-                        <li><a class="dropdown-item" href="#">Blank 2</a></li>
+                        @foreach($recentCategories as $cat)
+                            @php
+                                // Preserve search query when clicking categories
+                                $queryString = request('q') ? '&q=' . urlencode(request('q')) : '';
+                            @endphp
+
+                            <li>
+                                <a class="dropdown-item"
+                                href="{{ url('/?category=' . $cat['id'] . $queryString) }}">
+                                    {{ ucfirst($cat['name']) }}
+                                </a>
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
