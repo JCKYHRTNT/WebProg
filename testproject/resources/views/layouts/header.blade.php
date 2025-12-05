@@ -61,6 +61,22 @@
                     </button>
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                        {{-- CLEAR CATEGORY --}}
+                        @php
+                            // Preserve q but remove category
+                            $clearCategoryUrl = request('q')
+                                ? url('/?q=' . urlencode(request('q')))
+                                : url('/');
+                        @endphp
+
+                        @if(request('category'))
+                            <li>
+                                <a class="dropdown-item text-danger fw-semibold" href="{{ $clearCategoryUrl }}">
+                                    Clear
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                        @endif
                         @foreach($recentCategories as $cat)
                             @php
                                 // Preserve search query when clicking categories
