@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AccountController;
 
 // Home
 Route::get('/', [CategoryController::class, 'home'])->name('home');
@@ -24,4 +25,6 @@ Route::view('/products', 'products')->name('products');
 Route::view('/cart', 'cart')->name('cart');
 
 // Account page
-Route::view('/account', 'account')->name('account');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/account', [AccountController::class, 'index'])->name('account.index');
+});
