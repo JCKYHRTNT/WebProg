@@ -24,6 +24,9 @@ class AdminController extends Controller
         ]);
     }
 
+    /**
+     * Admin dashboard with username in URL: /a/{username}
+     */
     public function indexForUser(Request $request, string $username)
     {
         if (!session('user_id')) {
@@ -58,8 +61,10 @@ class AdminController extends Controller
 
         Product::create($data);
 
+        $slug = Str::slug(session('name'));
+
         return redirect()
-            ->route('admin')
+            ->route('admin.user', ['username' => $slug])
             ->with('status', 'Product created.');
     }
 
@@ -95,8 +100,10 @@ class AdminController extends Controller
 
         $product->update($data);
 
+        $slug = Str::slug(session('name'));
+
         return redirect()
-            ->route('admin')
+            ->route('admin.user', ['username' => $slug])
             ->with('status', 'Product updated.');
     }
 
@@ -108,8 +115,10 @@ class AdminController extends Controller
     {
         $product->delete();
 
+        $slug = Str::slug(session('name'));
+
         return redirect()
-            ->route('admin')
+            ->route('admin.user', ['username' => $slug])
             ->with('status', 'Product deleted.');
     }
 
@@ -124,8 +133,10 @@ class AdminController extends Controller
 
         Category::create($data);
 
+        $slug = Str::slug(session('name'));
+
         return redirect()
-            ->route('admin')
+            ->route('admin.user', ['username' => $slug])
             ->with('status', 'Category created.');
     }
 
@@ -158,8 +169,10 @@ class AdminController extends Controller
 
         $category->update($data);
 
+        $slug = Str::slug(session('name'));
+
         return redirect()
-            ->route('admin')
+            ->route('admin.user', ['username' => $slug])
             ->with('status', 'Category updated.');
     }
 
@@ -174,8 +187,10 @@ class AdminController extends Controller
     {
         $category->delete();
 
+        $slug = Str::slug(session('name'));
+
         return redirect()
-            ->route('admin')
+            ->route('admin.user', ['username' => $slug])
             ->with('status', 'Category deleted.');
     }
 }

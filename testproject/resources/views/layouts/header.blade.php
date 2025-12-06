@@ -45,9 +45,18 @@
                     </button>
                 </form>
 
-
                 {{-- Filter --}}
-                @unless(request()->routeIs('products.show'))
+                @php
+                    $showFilter = request()->routeIs(
+                        'home',
+                        'home.user',
+                        'admin.user',
+                        'cart',
+                        'cart.admin'
+                    );
+                @endphp
+
+                @if($showFilter)
                     <div class="dropdown">
                         <button
                             type="button"
@@ -95,7 +104,7 @@
 
                         </ul>
                     </div>
-                @endunless
+                @endif
             </div>
 
             {{-- RIGHT: Navbar --}}

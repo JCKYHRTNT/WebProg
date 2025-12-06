@@ -3,11 +3,56 @@
 @section('title', 'The Boys – Home')
 
 @php
+    use Illuminate\Support\Str;
+
     $currentCategoryId = request()->filled('category') ? (int) request('category') : null;
     $currentQuery      = request('q');
+    $allActive         = is_null($currentCategoryId);
+
+    // Logged-in admin slug based on name in session
+    $adminSlug = Str::slug(session('name'));
 @endphp
 
 @section('content')
+
+<style>
+/* EDIT BUTTON (blue) */
+.tb-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tb-blue);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+.tb-btn-secondary:hover {
+    filter: brightness(1.12);
+}
+
+/* DELETE BUTTON (red) */
+.tb-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #dc2626; /* red-600 */
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+}
+.tb-btn-danger:hover {
+    background: #ef4444; /* red-500 */
+}
+</style>
 
     {{-- Hero / intro --}}
     <section class="mb-4">
@@ -20,14 +65,11 @@
                 <div class="col-md-8">
                     <span class="badge rounded-pill"
                           style="background:#facc15;color:#111827;font-size:0.7rem;letter-spacing:0.08em;">
-                        ELECTRONICS & TOYS MARKETPLACE
+                        MARKETPLACE
                     </span>
                     <h1 class="mt-2 mb-2" style="font-size:1.6rem;font-weight:600;">
                         Welcome to The Boys
                     </h1>
-                    <p class="mb-0" style="font-size:0.9rem;max-width:420px;">
-                        Browse electronics and toys in a clean, focused storefront.
-                    </p>
                 </div>
             </div>
         </div>
@@ -43,8 +85,8 @@
                 {{-- All --}}
                 @php
                     $allUrl = $currentQuery
-                    ? url('/admin?q=' . urlencode($currentQuery))
-                    : url('/admin');
+                        ? url('/a/' . $adminSlug . '?q=' . urlencode($currentQuery))
+                        : url('/a/' . $adminSlug);
                 @endphp
 
                 <a
@@ -58,13 +100,13 @@
                     All
                 </a>
 
-                {{-- First 5 categories from DB --}}
+                {{-- First 5 categories --}}
                 @foreach($categories->take(5) as $cat)
                     @php
-                        $active    = $currentCategoryId === $cat->id;
-                        $qParam    = $currentQuery ? '&q=' . urlencode($currentQuery) : '';
-                        $catUrl = url('/admin?category=' . $cat->id . $qParam);
-                        $bgColor   = $active ? 'var(--tb-blue)' : 'transparent';
+                        $active  = $currentCategoryId === $cat->id;
+                        $qParam  = $currentQuery ? '&q=' . urlencode($currentQuery) : '';
+                        $catUrl  = url('/a/' . $adminSlug . '?category=' . $cat->id . $qParam);
+                        $bgColor = $active ? 'var(--tb-blue)' : 'transparent';
                         $textColor = $active ? '#f9fafb' : '#e5e7eb';
                     @endphp
 
@@ -116,7 +158,7 @@
                     <div class="col-6 col-md-4 col-lg-3">
                         <div class="tb-card h-100 overflow-hidden">
 
-                            {{-- Clickable image to product detail --}}
+                            {{-- Image --}}
                             <a href="{{ route('products.show', $product->id) }}" class="ratio ratio-4x3 d-block">
                                 <img
                                     src="{{ $product->image }}"
@@ -128,7 +170,7 @@
 
                             <div class="p-2 p-md-3">
 
-                                {{-- Category badge (clickable, filters by category) --}}
+                                {{-- Category badge (goes to public home, not required to change) --}}
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     @if($product->category)
                                         @php
@@ -144,12 +186,9 @@
                                     @endif
                                 </div>
 
-                                {{-- Clickable name to product detail --}}
+                                {{-- Name --}}
                                 <h3 class="mb-1" style="font-size:0.9rem;font-weight:600;">
-                                    <a
-                                        href="{{ route('products.show', $product->id) }}"
-                                        style="color:inherit;text-decoration:none;"
-                                    >
+                                    <a href="{{ route('products.show', $product->id) }}" style="color:inherit;text-decoration:none;">
                                         {{ $product->name }}
                                     </a>
                                 </h3>
@@ -159,14 +198,24 @@
                                     Rp{{ number_format($product->price, 0, ',', '.') }}
                                 </p>
 
-                                {{-- Edit & Delete Button --}}
+                                {{-- Edit + Delete --}}
                                 <div class="d-flex gap-2">
-                                    <a href="{{ route('admin.products.edit', $product->id) }}"
+                                    @php
+                                        $adminSlug = Str::slug(session('name'));
+                                    @endphp
+
+                                    <a href="{{ route('admin.products.edit', [
+                                            'username' => $adminSlug,
+                                            'product'  => $product->id,
+                                        ]) }}"
                                     class="tb-btn-secondary flex-fill text-center">
                                         Edit
                                     </a>
 
-                                    <form action="{{ route('admin.products.destroy', $product->id) }}"
+                                    <form action="{{ route('admin.products.destroy', [
+                                                'username' => $adminSlug,
+                                                'product'  => $product->id,
+                                            ]) }}"
                                         method="POST"
                                         class="flex-fill"
                                         onsubmit="return confirm('Delete this product?');">
@@ -176,7 +225,20 @@
                                             Delete
                                         </button>
                                     </form>
+
+                                    <form action="{{ route('admin.products.destroy', $product->id) }}"
+                                          method="POST"
+                                          class="flex-fill"
+                                          onsubmit="return confirm('Delete this product?');">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit" class="tb-btn-danger w-100">
+                                            Delete
+                                        </button>
+                                    </form>
                                 </div>
+
                             </div>
                         </div>
                     </div>

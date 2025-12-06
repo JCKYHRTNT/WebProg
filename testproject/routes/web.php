@@ -6,56 +6,99 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CartController;
 
-// Home
+// Guest Home
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::redirect('/home', '/')->name('home.redirect');
 
-// WITH USERNAME
+// User Home
 Route::get('/u/{username}', [HomeController::class, 'homeForUser'])
     ->middleware('auth.user')
     ->name('home.user');
 
-// Product detail page
+// Guest Product Detail
 Route::get('/products/{id}', [HomeController::class, 'productDetail'])
     ->name('products.show');
 
-// Cart page
-Route::get('/cart', [CartController::class, 'index'])->name('cart');
+// User Product Detail
+Route::get('/u/{username}/products/{id}', [HomeController::class, 'productDetail'])
+    ->middleware('auth.user')
+    ->name('products.show.user');
 
-// Cart actions
-Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-Route::post('/cart/items/{item}/update', [CartController::class, 'update'])->name('cart.item.update');
+// Admin Product Detail
+Route::get('/a/{username}/products/{id}', [HomeController::class, 'productDetail'])
+    ->middleware('admin')
+    ->name('products.show.admin');
 
-// Account page
-Route::view('/account', 'account')->name('account');
+// Guest cart
+Route::get('/cart', fn () => redirect()->route('login'))
+    ->name('cart.redirect');
+
+// User cart
+Route::get('/u/{username}/cart', [CartController::class, 'index'])
+    ->middleware('auth.user')
+    ->name('cart');
+
+// Cart
+Route::post('/u/{username}/cart/add/{product}', [CartController::class, 'add'])
+    ->middleware('auth.user')
+    ->name('cart.add');
+
+Route::post('/u/{username}/cart/items/{item}/update', [CartController::class, 'update'])
+    ->middleware('auth.user')
+    ->name('cart.item.update');
+
+// Guest
+Route::get('/account', fn () => redirect()->route('login'))
+    ->name('account.redirect');
+
+// User account
+Route::get('/u/{username}/account', fn () => view('account'))
+    ->middleware('auth.user')
+    ->name('account');
 
 // Admin
 Route::middleware('admin')->group(function () {
 
-    // Admin Page (username-based)
+    // Admin Home
     Route::get('/a/{username}', [AdminController::class, 'indexForUser'])
         ->name('admin.user');
+    
+    Route::get('/a/{username}/account', fn () => view('account'))
+        ->name('account.admin');
 
-    // Product CRUD
-    Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
-    Route::get('/admin/products/{product}/edit', [AdminController::class, 'editProduct'])->name('admin.products.edit');
-    Route::put('/admin/products/{product}', [AdminController::class, 'updateProduct'])->name('admin.products.update');
-    Route::delete('/admin/products/{product}', [AdminController::class, 'destroyProduct'])->name('admin.products.destroy');
+    // PRODUCT CRUD
+    Route::post('/a/{username}/products', [AdminController::class, 'storeProduct'])
+        ->name('admin.products.store');
+
+    Route::get('/a/{username}/products/{product}/edit', [AdminController::class, 'editProduct'])
+        ->name('admin.products.edit');
+
+    Route::put('/a/{username}/products/{product}', [AdminController::class, 'updateProduct'])
+        ->name('admin.products.update');
+
+    Route::delete('/a/{username}/products/{product}', [AdminController::class, 'destroyProduct'])
+        ->name('admin.products.destroy');
 
     // Category CRUD
-    Route::post('/admin/categories', [AdminController::class, 'storeCategory'])->name('admin.categories.store');
-    Route::get('/admin/categories/{category}/edit', [AdminController::class, 'editCategory'])->name('admin.categories.edit');
-    Route::put('/admin/categories/{category}', [AdminController::class, 'updateCategory'])->name('admin.categories.update');
-    Route::delete('/admin/categories/{category}', [AdminController::class, 'destroyCategory'])->name('admin.categories.destroy');
+    Route::post('/a/{username}/categories', [AdminController::class, 'storeCategory'])
+        ->name('admin.categories.store');
+
+    Route::get('/a/{username}/categories/{category}/edit', [AdminController::class, 'editCategory'])
+        ->name('admin.categories.edit');
+
+    Route::put('/a/{username}/categories/{category}', [AdminController::class, 'updateCategory'])
+        ->name('admin.categories.update');
+
+    Route::delete('/a/{username}/categories/{category}', [AdminController::class, 'destroyCategory'])
+        ->name('admin.categories.destroy');
 });
 
-// LOGIN
+
+// Authentication
 Route::get('/login',  [LoginController::class, 'show'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
-// REGISTER
 Route::get('/register',  [LoginController::class, 'showRegister'])->name('register');
 Route::post('/register', [LoginController::class, 'register'])->name('register.submit');
 
-// LOGOUT
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
