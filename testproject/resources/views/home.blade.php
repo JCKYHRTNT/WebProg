@@ -164,9 +164,12 @@
                                 </p>
 
                                 <div class="d-flex gap-2">
-                                    <button class="tb-btn-primary flex-fill">
-                                        Add to Cart
-                                    </button>
+                                    <form method="POST" action="{{ route('cart.add', $product['id']) }}" class="flex-fill">
+                                        @csrf
+                                        <button type="submit" class="tb-btn-primary w-100">
+                                            Add to Cart
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

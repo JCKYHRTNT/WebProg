@@ -20,7 +20,11 @@ Route::get('/products/{id}', [HomeController::class, 'productDetail'])
     ->name('products.show');
 
 // Cart page
-Route::view('/cart', 'cart')->name('cart');
+Route::get('/cart', [CartController::class, 'index'])->name('cart');
+
+// Cart actions
+Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/items/{item}/update', [CartController::class, 'update'])->name('cart.item.update');
 
 // Account page
 Route::view('/account', 'account')->name('account');

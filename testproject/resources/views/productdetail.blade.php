@@ -54,9 +54,12 @@
             </p>
 
             {{-- ADD TO CART --}}
-            <button class="tb-btn-primary">
-                Add to Cart
-            </button>
+            <form method="POST" action="{{ route('cart.add', $product->id) }}" style="display:inline;">
+                @csrf
+                <button type="submit" class="tb-btn-primary">
+                    Add to Cart
+                </button>
+            </form>
 
             {{-- BACK --}}
             <a href="{{ route('home') }}"
