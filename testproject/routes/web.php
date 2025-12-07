@@ -16,7 +16,7 @@ Route::get('/u/{username}', [HomeController::class, 'homeForUser'])
     ->middleware('auth.user')
     ->name('home.user');
 
-// Guest Product Detail (user/guest only)
+// Guest Product Detail
 Route::get('/products/{id}', [HomeController::class, 'productDetail'])
     ->name('products.show');
 
@@ -34,7 +34,7 @@ Route::get('/u/{username}/cart', [CartController::class, 'index'])
     ->middleware('auth.user')
     ->name('cart');
 
-// Cart
+// User Cart Add Update
 Route::post('/u/{username}/cart/add/{product}', [CartController::class, 'add'])
     ->middleware('auth.user')
     ->name('cart.add');

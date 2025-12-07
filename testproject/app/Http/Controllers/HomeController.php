@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class HomeController extends Controller
 {
     /**
-     * Guest + user home (product list).
+     * Guest + user home.
      */
     public function home(Request $request)
     {
@@ -27,7 +27,6 @@ class HomeController extends Controller
             ->pluck('name', 'id')
             ->toArray();
 
-        // Base product query
         $productsQuery = Product::query();
 
         // FILTER BY CATEGORY
@@ -88,12 +87,11 @@ class HomeController extends Controller
             ] + $request->query());
         }
 
-        // Re-use same listing logic
         return $this->home($request);
     }
 
     /**
-     * Guest / user product detail (admin detail is in AdminController now).
+     * Guest / user product detail
      */
     public function productDetail(int $id)
     {

@@ -15,11 +15,11 @@ class Cart extends Model
 
     public function user() 
     {
-        return $this->belongsTo(User::class); // Cart milik 1 user
+        return $this->belongsTo(User::class);
     }
 
     public function items()
     {
-        return $this->hasMany(CartItem::class); // Cart mempunyai banyak cart_items
+        return $this->hasMany(CartItem::class);
     }
 }

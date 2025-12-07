@@ -6,14 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
-use Illuminate\Support\Str;   // <<< ADD THIS
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
     /**
      * Show cart for logged-in user.
      */
-    public function index($username = null)   // accept username (optional)
+    public function index($username = null)
     {
         if (!session('user_id')) {
             return redirect()->route('login')->with('error', 'Please login to view your cart.');
@@ -41,7 +41,7 @@ class CartController extends Controller
     }
 
     /**
-     * Add product to cart (with quantity).
+     * Add product to cart
      */
     public function add(Request $request, $username, Product $product)
     {

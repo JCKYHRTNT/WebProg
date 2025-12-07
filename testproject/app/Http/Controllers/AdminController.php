@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class AdminController extends Controller
 {
     /**
-     * Admin dashboard (product list) – used by /a/{username}
+     * Admin dashboard (product list)
      */
     public function index(Request $request)
     {
@@ -89,8 +89,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Admin product detail.
-     * Route: /a/{username}/products/{product}
+     * Admin product detail: /a/{username}/products/{product}
      */
     public function productDetail(Request $request, string $username, Product $product)
     {
@@ -137,10 +136,10 @@ class AdminController extends Controller
         $categoryCount = Category::count();
         $adminCount    = User::where('role', 'admin')->count();
 
-        // Users that can be promoted to admin (anything not 'admin')
+        // Users that can be promoted to admin
         $eligibleUsers = User::where('role', '!=', 'admin')->get();
 
-        // Admins that can be demoted (exclude current logged-in admin)
+        // Admins that can be demoted
         $demotableAdmins = User::where('role', 'admin')
             ->where('id', '!=', session('user_id'))
             ->get();
@@ -156,8 +155,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Promote existing non-admin user to admin.
-     * Route name: admin.crud.promote
+     * Promote: admin.crud.promote
      */
     public function promoteAdmin(Request $request, string $username)
     {
@@ -203,8 +201,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Demote an admin back to user (confirm with current password).
-     * Route name: admin.crud.demote
+     * Demote: admin.crud.demote
      */
     public function demoteAdmin(Request $request, string $username)
     {
@@ -239,7 +236,6 @@ class AdminController extends Controller
             return back()->with('error', 'Selected user is not an admin.');
         }
 
-        // Optional: prevent self-demotion from this screen
         if ($user->id === $currentAdmin->id) {
             return back()->with('error', 'You cannot demote yourself here.');
         }
@@ -255,7 +251,6 @@ class AdminController extends Controller
     }
 
     // ===== PRODUCT CRUD =====
-
     public function storeProduct(Request $request, string $username)
     {
         $data = $request->validate([

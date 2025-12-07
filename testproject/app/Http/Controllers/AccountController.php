@@ -27,7 +27,7 @@ class AccountController extends Controller
 
         return view('account', [
             'user'          => $user,
-            'isAdminPage'   => false,  // current URL is /u/...
+            'isAdminPage'   => false,
         ]);
     }
 
@@ -49,13 +49,12 @@ class AccountController extends Controller
 
         return view('account', [
             'user'          => $user,
-            'isAdminPage'   => true,   // current URL is /a/...
+            'isAdminPage'   => true,
         ]);
     }
 
     /**
      * Update account (name + email, password confirmation).
-     * Works for both /u/... and /a/... routes.
      */
     public function update(Request $request, string $username)
     {
@@ -66,9 +65,7 @@ class AccountController extends Controller
         $user = User::findOrFail(session('user_id'));
         $expectedSlug = Str::slug($user->name);
 
-        // Always normalize username in URL
         if ($username !== $expectedSlug) {
-            // determine which base route to use
             $baseRoute = $request->routeIs('account.admin.update') ? 'account.admin' : 'account';
 
             return redirect()->route($baseRoute, ['username' => $expectedSlug]);
@@ -88,7 +85,7 @@ class AccountController extends Controller
         $user->email = $data['email'];
         $user->save();
 
-        // Update session name so slug stays in sync
+        // Update session name
         session(['name' => $user->name]);
 
         $newSlug   = Str::slug($user->name);
@@ -101,7 +98,6 @@ class AccountController extends Controller
 
     /**
      * Delete account (password confirmation).
-     * Works for both /u/... and /a/... routes.
      */
     public function destroy(Request $request, string $username)
     {

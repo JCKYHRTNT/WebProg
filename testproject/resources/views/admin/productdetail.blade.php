@@ -141,7 +141,7 @@
                            value="{{ old('image', $product->image) }}">
                 </div>
 
-                {{-- Quantity with - / + --}}
+                {{-- Quantity --}}
                 <div class="mb-2">
                     <label class="form-label d-block">Quantity</label>
                     <div class="d-flex align-items-center" style="gap:0.4rem;">

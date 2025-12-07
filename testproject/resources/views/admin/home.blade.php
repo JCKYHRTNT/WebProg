@@ -83,7 +83,7 @@
     }
 </style>
 
-{{-- Hero / intro --}}
+{{-- Intro --}}
 <section class="mb-4">
     <div class="tb-card p-4 p-md-4" style="
         background: radial-gradient(circle at top left, var(--tb-yellow) 0, var(--tb-blue) 45%, var(--tb-black) 100%);
@@ -124,7 +124,7 @@
                 All
             </a>
 
-            {{-- Recent/default categories (max 3) --}}
+            {{-- Recent/default categories --}}
             @foreach($recentCategories as $cat)
                 @php
                     $isActive = $categoryId === $cat['id'];
@@ -157,7 +157,8 @@
                     border-radius:999px;
                     border:1px dashed rgba(148,163,184,0.8);
                 "
-                onclick="tbPromptNewCategory()"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCreateCategory"
             >
                 +
             </button>
@@ -188,7 +189,7 @@
 <section>
     <div class="row g-3">
 
-        {{-- ADD PRODUCT CARD (always present, shares product-card sizing) --}}
+        {{-- ADD PRODUCT CARD --}}
         <div class="col-6 col-md-4 col-lg-3">
             <div class="tb-card tb-product-card overflow-hidden tb-add-product-card">
                 <button type="button"
@@ -196,14 +197,14 @@
                         data-bs-toggle="modal"
                         data-bs-target="#modalAddProduct">
 
-                    {{-- top: same 4x3 area as product image --}}
+                    {{-- top --}}
                     <div class="ratio ratio-4x3">
                         <div class="d-flex align-items-center justify-content-center w-100 h-100">
                             <div class="tb-add-product-circle">+</div>
                         </div>
                     </div>
 
-                    {{-- bottom: same padding area as product info --}}
+                    {{-- bottom --}}
                     <div class="p-2 p-md-3 d-flex align-items-end justify-content-center">
                         <div style="font-weight:600;font-size:0.95rem;color:#111827;">
                             Add Product
@@ -316,7 +317,6 @@
                 </div>
             </div>
         @empty
-            {{-- nothing extra; Add Product card is already shown --}}
         @endforelse
     </div>
 </section>
@@ -330,30 +330,6 @@
     function tbHideNewProductForm() {
         document.getElementById('tb-new-product-open').classList.add('d-none');
         document.getElementById('tb-new-product-closed').classList.remove('d-none');
-    }
-
-    function tbPromptNewCategory() {
-        const name = window.prompt('New category name:');
-        if (!name) return;
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = @json(route('admin.categories.store', ['username' => $adminSlug]));
-
-        const csrf = document.createElement('input');
-        csrf.type  = 'hidden';
-        csrf.name  = '_token';
-        csrf.value = @json(csrf_token());
-        form.appendChild(csrf);
-
-        const nameInput = document.createElement('input');
-        nameInput.type  = 'hidden';
-        nameInput.name  = 'name';
-        nameInput.value = name;
-        form.appendChild(nameInput);
-
-        document.body.appendChild(form);
-        form.submit();
     }
 </script>
 
@@ -414,6 +390,31 @@
                     <button type="submit" class="tb-btn-primary">
                         Save
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- CREATE CATEGORY MODAL --}}
+<div class="modal fade" id="modalCreateCategory" tabindex="-1" aria-labelledby="modalCreateCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.categories.store', ['username' => $adminSlug]) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCreateCategoryLabel">New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label" for="cat_new_name">Name</label>
+                        <input type="text" id="cat_new_name" name="name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="tb-btn-secondary">Save</button>
                 </div>
             </form>
         </div>

@@ -100,7 +100,7 @@
 
 <div class="login-wrapper">
 
-    {{-- LEFT SIDE (illustration) --}}
+    {{-- LEFT SIDE --}}
     <div class="login-left">
         <div>
             <h2 class="login-title">Login to your account</h2>
@@ -111,7 +111,7 @@
         </div>
     </div>
 
-    {{-- RIGHT SIDE (form) --}}
+    {{-- RIGHT SIDE --}}
     <div class="login-right">
 
         <div class="text-center mb-4">

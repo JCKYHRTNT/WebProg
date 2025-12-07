@@ -36,7 +36,7 @@
                         Welcome to The Boys
                     </h1>
                     <p class="mb-0" style="font-size:0.9rem;max-width:420px;">
-                        Browse electronics and toys in a clean.
+                        Browse The Boys Marketplace.
                     </p>
                 </div>
             </div>

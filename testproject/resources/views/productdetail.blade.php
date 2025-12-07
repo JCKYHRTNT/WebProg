@@ -65,7 +65,7 @@
                 {{ $product->description ?? 'No description available.' }}
             </p>
 
-            {{-- ADD TO CART / LOGIN --}}
+            {{-- ADD TO CART --}}
             @if($loggedIn)
                 <form method="POST"
                     action="{{ route('cart.add', [
@@ -77,14 +77,14 @@
                     @csrf
                     <input type="hidden" name="quantity" value="1">
 
-                    {{-- State 1: button only --}}
+                    {{-- State 1 --}}
                     <div class="d-flex tb-add-to-cart-inactive">
                         <button type="button" class="tb-btn-primary tb-add-to-cart-trigger">
                             Add to Cart
                         </button>
                     </div>
 
-                    {{-- State 2: quantity controls + submit --}}
+                    {{-- State 2 --}}
                     <div class="d-flex align-items-center tb-add-to-cart-active d-none" style="gap:0.4rem;">
                         <div class="d-flex align-items-center" style="gap:0.3rem;">
                             <button type="button"
@@ -110,7 +110,6 @@
                     </div>
                 </form>
             @else
-                {{-- Guest can view details but must login to add --}}
                 <a href="{{ route('login') }}"
                 class="tb-btn-primary"
                 style="display:inline-flex;align-items:center;justify-content:center;">
@@ -148,5 +147,4 @@
     </div>
 
 </div>
-
 @endsection

@@ -73,7 +73,7 @@
     {{-- Header --}}
     <h1 style="font-size:1.8rem;font-weight:700;margin-bottom:1rem;">Account</h1>
 
-    {{-- Flash messages --}}
+    {{-- Flash --}}
     @if(session('success'))
         <div class="alert alert-success py-2">
             {{ session('success') }}
@@ -256,7 +256,6 @@
 
 </div>
 
-{{-- Simple JS toggles --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const editBtn   = document.getElementById('btnToggleEdit');

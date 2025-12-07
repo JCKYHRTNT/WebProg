@@ -32,6 +32,6 @@ class User extends Authenticatable
 
     public function cart() 
     {
-        return $this->hasOne(Cart::class); // 1 User mempunyai 1 Cart
+        return $this->hasOne(Cart::class);
     }
 }

@@ -20,11 +20,11 @@ class Product extends Model
 
     public function category() 
     {
-        return $this->belongsTo(Category::class); // produk milik 1 kategori
+        return $this->belongsTo(Category::class);
     }
 
     public function cartItems() 
     {
-        return $this->hasMany(CartItem::class); // Produk bisa muncul di banyak cart_items
+        return $this->hasMany(CartItem::class);
     }
 }

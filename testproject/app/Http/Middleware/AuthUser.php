@@ -14,12 +14,11 @@ class AuthUser
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Must be logged in
         if (!session('user_id')) {
             return redirect('/login')->with('error', 'Please login first.');
         }
 
-        // Username slug in URL (ex: /u/jacky-hertanto)
+        // Username slug in URL
         $urlUsername = $request->route('username');  
 
         // Session username slug

@@ -69,7 +69,7 @@
                         </div>
                     </div>
 
-                    {{-- QUANTITY CONTROLS --}}
+                    {{-- QUANTITY --}}
                     <div style="min-width:150px;">
                         <div style="font-size:0.85rem;color:var(--tb-gray-text);text-align:center;">Quantity</div>
 
@@ -87,7 +87,6 @@
                                 </button>
                             </form>
 
-                            {{-- current quantity (readonly) --}}
                             <div style="min-width:32px;text-align:center;font-weight:500;">
                                 {{ $item->quantity }}
                             </div>
@@ -107,7 +106,7 @@
                         </div>
                     </div>
 
-                    {{-- LINE TOTAL --}}
+                    {{-- TOTAL --}}
                     <div style="min-width:130px;text-align:right;">
                         <div style="font-size:0.85rem;color:var(--tb-gray-text);">Total</div>
                         <div style="font-weight:600;color:var(--tb-blue);">

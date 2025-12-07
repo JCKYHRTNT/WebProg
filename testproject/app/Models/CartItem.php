@@ -18,11 +18,11 @@ class CartItem extends Model
 
     public function cart() 
     {
-        return $this->belongsTo(Cart::class); //CartItem milik 1 cart
+        return $this->belongsTo(Cart::class);
     }
 
     public function product() 
     {
-        return $this->belongsTo(Product::class); // CartItem milik 1 produk
+        return $this->belongsTo(Product::class);
     }
 }
