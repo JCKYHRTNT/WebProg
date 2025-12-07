@@ -189,53 +189,67 @@
                                     </p>
                                 </div>
 
+                                @php
+                                    $isOutOfStock = ($product['quantity'] ?? 0) <= 0;
+                                @endphp
+
                                 <div class="d-flex gap-2 mt-auto">
-                                    @if($userId)
-                                        <form method="POST"
-                                              action="{{ route('cart.add', [
-                                                  'username' => $userSlug,
-                                                  'product'  => $product['id'],
-                                              ]) }}"
-                                              class="flex-fill tb-add-to-cart-form"
-                                              data-max="{{ $product['quantity'] }}">
-                                            @csrf
-                                            <input type="hidden" name="quantity" value="1">
+                                    @if($isOutOfStock)
+                                        <button type="button"
+                                                class="tb-btn-primary w-100 text-center"
+                                                disabled
+                                                style="background:#9ca3af;border-color:#9ca3af;cursor:not-allowed;opacity:0.8;">
+                                            Out of Stock
+                                        </button>
+                                    @else
+                                        @if($userId)
+                                            <form method="POST"
+                                                action="{{ route('cart.add', [
+                                                    'username' => $userSlug,
+                                                    'product'  => $product['id'],
+                                                ]) }}"
+                                                class="flex-fill tb-add-to-cart-form"
+                                                data-max="{{ $product['quantity'] }}">
+                                                @csrf
+                                                <input type="hidden" name="quantity" value="1">
 
-                                            <div class="d-flex tb-add-to-cart-inactive">
-                                                <button type="button" class="tb-btn-primary w-100 tb-add-to-cart-trigger">
-                                                    Add to Cart
-                                                </button>
-                                            </div>
-
-                                            <div class="d-flex align-items-center tb-add-to-cart-active d-none" style="gap:0.4rem;">
-                                                <div class="d-flex align-items-center" style="gap:0.3rem;">
-                                                    <button type="button"
-                                                            class="btn btn-sm"
-                                                            style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
-                                                            data-role="qty-minus">
-                                                        –
-                                                    </button>
-                                                    <div class="tb-qty-display" style="min-width:28px;text-align:center;font-weight:500;">
-                                                        1
-                                                    </div>
-                                                    <button type="button"
-                                                            class="btn btn-sm"
-                                                            style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
-                                                            data-role="qty-plus">
-                                                        +
+                                                <div class="d-flex tb-add-to-cart-inactive">
+                                                    <button type="button" class="tb-btn-primary w-100 tb-add-to-cart-trigger">
+                                                        Add to Cart
                                                     </button>
                                                 </div>
 
-                                                <button type="submit" class="tb-btn-primary flex-grow-1 text-center">
-                                                    Add to Cart
-                                                </button>
-                                            </div>
-                                        </form>
-                                    @else
-                                        {{-- Not logged in → send to login --}}
-                                        <a href="{{ route('login') }}" class="tb-btn-primary w-100 text-center">
-                                            Add to Cart
-                                        </a>
+                                                <div class="d-flex align-items-center tb-add-to-cart-active d-none" style="gap:0.4rem;">
+                                                    <div class="d-flex align-items-center" style="gap:0.3rem;">
+                                                        <button type="button"
+                                                                class="btn btn-sm"
+                                                                style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
+                                                                data-role="qty-minus">
+                                                            –
+                                                        </button>
+                                                        <div class="tb-qty-display" style="min-width:28px;text-align:center;font-weight:500;">
+                                                            1
+                                                        </div>
+                                                        <button type="button"
+                                                                class="btn btn-sm"
+                                                                style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
+                                                                data-role="qty-plus">
+                                                            +
+                                                        </button>
+                                                    </div>
+
+                                                    <button type="submit" class="tb-btn-primary flex-grow-1 text-center">
+                                                        Add to Cart
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        @else
+                                            {{-- Not logged in → send to login --}}
+                                            <a href="{{ route('login') }}"
+                                            class="tb-btn-primary w-100 text-center">
+                                                Add to Cart
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

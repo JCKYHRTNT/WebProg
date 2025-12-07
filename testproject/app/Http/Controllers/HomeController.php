@@ -93,9 +93,11 @@ class HomeController extends Controller
     /**
      * Guest / user product detail
      */
-    public function productDetail(int $id)
+    public function productDetail($usernameOrId, $maybeId = null)
     {
-        $product = Product::with('category')->findOrFail($id);
+        $id = $maybeId ?? $usernameOrId;
+
+        $product = Product::with('category')->findOrFail((int) $id);
 
         return view('productdetail', [
             'product' => $product,

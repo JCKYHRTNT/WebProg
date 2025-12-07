@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -124,5 +127,71 @@ class CartController extends Controller
         return redirect()
             ->route('cart', ['username' => $slug])
             ->with('success', 'Cart updated.');
+    }
+
+    /**
+     * Checkout: confirm with password, update product stock, clear cart, redirect home.
+     */
+    public function checkout(Request $request, $username)
+    {
+        if (!session('user_id')) {
+            return redirect()->route('login')->with('error', 'Please login first.');
+        }
+
+        // Validate password input
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $userId = session('user_id');
+
+        // Get user and check password
+        $user = User::find($userId);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return redirect()
+                ->back()
+                ->with('error', 'Invalid password.');
+        }
+
+        // Get user's cart
+        $cart = Cart::with(['items.product'])
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Your cart is empty.');
+        }
+
+        DB::transaction(function () use ($cart) {
+            foreach ($cart->items as $item) {
+                $product = $item->product;
+
+                if (!$product) {
+                    continue;
+                }
+
+                // Decrease product stock
+                $currentStock = (int) $product->quantity;
+                $newStock     = $currentStock - (int) $item->quantity;
+
+                if ($newStock < 0) {
+                    $newStock = 0;
+                }
+
+                $product->quantity = $newStock;
+                $product->save();
+            }
+
+            // Clear cart items after successful stock update
+            $cart->items()->delete();
+        });
+
+        $slug = Str::slug(session('name'));
+
+        return redirect()
+            ->route('home.user', ['username' => $slug])
+            ->with('success', 'Payment successful. Thank you for your purchase.');
     }
 }

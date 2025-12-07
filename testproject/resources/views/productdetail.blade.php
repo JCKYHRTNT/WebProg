@@ -9,6 +9,7 @@
 
     $loggedIn = session('user_id') !== null;
     $userSlug = $loggedIn ? Str::slug(session('name')) : null;
+    $isOutOfStock = ($product->quantity ?? 0) <= 0;
 @endphp
 
 <div class="tb-card p-4">
@@ -55,9 +56,9 @@
                 Rp{{ number_format($product->price, 0, ',', '.') }}
             </p>
 
-            {{-- QUANTITY --}}
+            {{-- STOCK --}}
             <p style="font-size:0.9rem;font-weight:500;color:#111827;">
-                Quantity: {{ $product->quantity }}
+                Stock: {{ $product->quantity }}
             </p>
 
             {{-- DESCRIPTION --}}
@@ -66,55 +67,64 @@
             </p>
 
             {{-- ADD TO CART --}}
-            @if($loggedIn)
-                <form method="POST"
-                    action="{{ route('cart.add', [
-                        'username' => $userSlug,
-                        'product'  => $product->id,
-                    ]) }}"
-                    class="d-inline-block tb-add-to-cart-form"
-                    data-max="{{ $product->quantity }}">
-                    @csrf
-                    <input type="hidden" name="quantity" value="1">
+            @if($isOutOfStock)
+                <button type="button"
+                        class="tb-btn-primary"
+                        disabled
+                        style="display:inline-flex;align-items:center;justify-content:center;background:#9ca3af;border-color:#9ca3af;cursor:not-allowed;opacity:0.8;">
+                    Out of Stock
+                </button>
+            @else
+                @if($loggedIn)
+                    <form method="POST"
+                        action="{{ route('cart.add', [
+                            'username' => $userSlug,
+                            'product'  => $product->id,
+                        ]) }}"
+                        class="d-inline-block tb-add-to-cart-form"
+                        data-max="{{ $product->quantity }}">
+                        @csrf
+                        <input type="hidden" name="quantity" value="1">
 
-                    {{-- State 1 --}}
-                    <div class="d-flex tb-add-to-cart-inactive">
-                        <button type="button" class="tb-btn-primary tb-add-to-cart-trigger">
-                            Add to Cart
-                        </button>
-                    </div>
-
-                    {{-- State 2 --}}
-                    <div class="d-flex align-items-center tb-add-to-cart-active d-none" style="gap:0.4rem;">
-                        <div class="d-flex align-items-center" style="gap:0.3rem;">
-                            <button type="button"
-                                    class="btn btn-sm"
-                                    style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
-                                    data-role="qty-minus">
-                                –
-                            </button>
-                            <div class="tb-qty-display" style="min-width:28px;text-align:center;font-weight:500;">
-                                1
-                            </div>
-                            <button type="button"
-                                    class="btn btn-sm"
-                                    style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
-                                    data-role="qty-plus">
-                                +
+                        {{-- State 1 --}}
+                        <div class="d-flex tb-add-to-cart-inactive">
+                            <button type="button" class="tb-btn-primary tb-add-to-cart-trigger">
+                                Add to Cart
                             </button>
                         </div>
 
-                        <button type="submit" class="tb-btn-primary">
-                            Add to Cart
-                        </button>
-                    </div>
-                </form>
-            @else
-                <a href="{{ route('login') }}"
-                class="tb-btn-primary"
-                style="display:inline-flex;align-items:center;justify-content:center;">
-                    Add to Cart
-                </a>
+                        {{-- State 2 --}}
+                        <div class="d-flex align-items-center tb-add-to-cart-active d-none" style="gap:0.4rem;">
+                            <div class="d-flex align-items-center" style="gap:0.3rem;">
+                                <button type="button"
+                                        class="btn btn-sm"
+                                        style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
+                                        data-role="qty-minus">
+                                    –
+                                </button>
+                                <div class="tb-qty-display" style="min-width:28px;text-align:center;font-weight:500;">
+                                    1
+                                </div>
+                                <button type="button"
+                                        class="btn btn-sm"
+                                        style="border-radius:999px;border:1px solid #d1d5db;padding:0.1rem 0.5rem;"
+                                        data-role="qty-plus">
+                                    +
+                                </button>
+                            </div>
+
+                            <button type="submit" class="tb-btn-primary">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}"
+                    class="tb-btn-primary"
+                    style="display:inline-flex;align-items:center;justify-content:center;">
+                        Add to Cart
+                    </a>
+                @endif
             @endif
 
             {{-- BACK --}}

@@ -43,6 +43,11 @@ Route::post('/u/{username}/cart/items/{item}/update', [CartController::class, 'u
     ->middleware('auth.user')
     ->name('cart.item.update');
 
+// User Cart Checkout
+Route::post('/u/{username}/cart/checkout', [CartController::class, 'checkout'])
+    ->middleware('auth.user')
+    ->name('cart.checkout');
+
 // Account Page
 // Guest account
 Route::get('/account', fn () => redirect()->route('login'))

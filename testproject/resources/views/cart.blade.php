@@ -128,12 +128,44 @@
                     </div>
                 </div>
 
+                {{-- Payment --}}
                 <button
                     type="button"
                     class="tb-btn-primary w-100"
-                    onclick="alert('Payment Successful');">
+                    onclick="document.getElementById('payment-confirm-box').classList.remove('d-none');">
                     Payment
                 </button>
+
+                <div id="payment-confirm-box" class="mt-3 d-none">
+                    <form method="POST" action="{{ route('cart.checkout', ['username' => $userSlug]) }}">
+                        @csrf
+
+                        <div class="mb-2">
+                            <label for="payment-password" style="font-size:0.85rem;font-weight:500;">
+                                Confirm Password
+                            </label>
+                            <input
+                                type="password"
+                                id="payment-password"
+                                name="password"
+                                class="form-control form-control-sm"
+                                required
+                            >
+                        </div>
+
+                        <div class="d-flex justify-content-between" style="gap:0.5rem;">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    onclick="document.getElementById('payment-confirm-box').classList.add('d-none');">
+                                Cancel
+                            </button>
+
+                            <button type="submit" class="tb-btn-primary btn btn-sm">
+                                Confirm Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
