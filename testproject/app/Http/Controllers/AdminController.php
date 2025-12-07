@@ -137,38 +137,121 @@ class AdminController extends Controller
         $categoryCount = Category::count();
         $adminCount    = User::where('role', 'admin')->count();
 
+        // Users that can be promoted to admin (anything not 'admin')
+        $eligibleUsers = User::where('role', '!=', 'admin')->get();
+
+        // Admins that can be demoted (exclude current logged-in admin)
+        $demotableAdmins = User::where('role', 'admin')
+            ->where('id', '!=', session('user_id'))
+            ->get();
+
         return view('admin.crud', [
-            'productCount'  => $productCount,
-            'categoryCount' => $categoryCount,
-            'adminCount'    => $adminCount,
-            'categories'    => Category::orderBy('id')->get(),
+            'productCount'    => $productCount,
+            'categoryCount'   => $categoryCount,
+            'adminCount'      => $adminCount,
+            'categories'      => Category::orderBy('id')->get(),
+            'eligibleUsers'   => $eligibleUsers,
+            'demotableAdmins' => $demotableAdmins,
         ]);
     }
 
     /**
-     * Register a new admin from the CRUD hub.
+     * Promote existing non-admin user to admin.
+     * Route name: admin.crud.promote
      */
-    public function registerAdmin(Request $request, string $username)
+    public function promoteAdmin(Request $request, string $username)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $sessionName  = session('name');
+        $expectedSlug = Str::slug($sessionName);
+
+        if ($username !== $expectedSlug) {
+            return redirect()->route('admin.crud', [
+                'username' => $expectedSlug,
+            ] + $request->query());
+        }
+
         $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'min:4', 'confirmed'],
+            'user_id'          => ['required', 'exists:users,id'],
+            'current_password' => ['required', 'string'],
         ]);
 
-        User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => 'admin',
-            'profpic'  => null,
-        ]);
+        $currentAdmin = User::findOrFail(session('user_id'));
+
+        // Verify current admin password
+        if (!Hash::check($data['current_password'], $currentAdmin->password)) {
+            return back()->with('error', 'Incorrect password.');
+        }
+
+        $user = User::findOrFail($data['user_id']);
+
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Selected user is already an admin.');
+        }
+
+        $user->role = 'admin';
+        $user->save();
 
         $slug = Str::slug(session('name'));
 
         return redirect()
             ->route('admin.crud', ['username' => $slug])
-            ->with('success', 'New admin account created.');
+            ->with('success', 'User promoted to admin.');
+    }
+
+    /**
+     * Demote an admin back to user (confirm with current password).
+     * Route name: admin.crud.demote
+     */
+    public function demoteAdmin(Request $request, string $username)
+    {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $sessionName  = session('name');
+        $expectedSlug = Str::slug($sessionName);
+
+        if ($username !== $expectedSlug) {
+            return redirect()->route('admin.crud', [
+                'username' => $expectedSlug,
+            ] + $request->query());
+        }
+
+        $data = $request->validate([
+            'user_id'          => ['required', 'exists:users,id'],
+            'current_password' => ['required', 'string'],
+        ]);
+
+        $currentAdmin = User::findOrFail(session('user_id'));
+
+        // Verify current admin password
+        if (!Hash::check($data['current_password'], $currentAdmin->password)) {
+            return back()->with('error', 'Incorrect password.');
+        }
+
+        $user = User::findOrFail($data['user_id']);
+
+        if ($user->role !== 'admin') {
+            return back()->with('error', 'Selected user is not an admin.');
+        }
+
+        // Optional: prevent self-demotion from this screen
+        if ($user->id === $currentAdmin->id) {
+            return back()->with('error', 'You cannot demote yourself here.');
+        }
+
+        $user->role = 'user';
+        $user->save();
+
+        $slug = Str::slug(session('name'));
+
+        return redirect()
+            ->route('admin.crud', ['username' => $slug])
+            ->with('success', 'Admin has been demoted to user.');
     }
 
     // ===== PRODUCT CRUD =====
@@ -193,7 +276,6 @@ class AdminController extends Controller
             ->with('status', 'Product created.');
     }
 
-    // editing from anywhere just reuses productDetail + same Blade
     public function editProduct(Request $request, string $username, Product $product)
     {
         return $this->productDetail($request, $username, $product);
@@ -242,7 +324,7 @@ class AdminController extends Controller
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.crud', ['username' => $slug])  // <-- go back to CRUD page
+            ->route('admin.crud', ['username' => $slug])
             ->with('status', 'Category created.');
     }
 
@@ -269,7 +351,7 @@ class AdminController extends Controller
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.crud', ['username' => $slug])  // <-- CRUD page
+            ->route('admin.crud', ['username' => $slug])
             ->with('status', 'Category updated.');
     }
 
@@ -280,7 +362,7 @@ class AdminController extends Controller
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.crud', ['username' => $slug])  // <-- CRUD page
+            ->route('admin.crud', ['username' => $slug])
             ->with('status', 'Category deleted.');
     }
 }

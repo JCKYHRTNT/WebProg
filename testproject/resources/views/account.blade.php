@@ -16,40 +16,55 @@
 @section('content')
 
 <style>
-    .tb-btn-secondary {
+    .tb-btn-account {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: var(--tb-blue);
-        color: #ffffff;
+        width: 100%;
         border-radius: 999px;
-        padding: 0.4rem 0.9rem;
-        font-size: 0.85rem;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
         font-weight: 500;
         border: none;
         cursor: pointer;
         text-decoration: none;
+        transition: filter 0.15s ease, background-color 0.15s ease;
     }
-    .tb-btn-secondary:hover {
+
+    /* Edit = blue */
+    .tb-btn-account-edit {
+        background: var(--tb-blue);
+        color: #ffffff;
+    }
+    .tb-btn-account-edit:hover {
         filter: brightness(1.12);
     }
 
-    .tb-btn-danger {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+    /* Delete = red */
+    .tb-btn-account-delete {
         background: #dc2626;
         color: #ffffff;
-        border-radius: 999px;
-        padding: 0.4rem 0.9rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-        border: none;
-        cursor: pointer;
-        text-decoration: none;
     }
-    .tb-btn-danger:hover {
+    .tb-btn-account-delete:hover {
         background: #ef4444;
+    }
+
+    /* Sign out = darker red */
+    .tb-btn-account-logout {
+        background: #b91c1c;
+        color: #ffffff;
+    }
+    .tb-btn-account-logout:hover {
+        background: #991b1b;
+    }
+
+    /* User/Admin switch = different blue/purple */
+    .tb-btn-account-role {
+        background: #1d4ed8; /* or any distinct color */
+        color: #ffffff;
+    }
+    .tb-btn-account-role:hover {
+        filter: brightness(1.12);
     }
 </style>
 
@@ -107,8 +122,10 @@
 
     {{-- EDIT ACCOUNT --}}
     <div class="mb-3">
-        <div class="d-flex align-items-center justify-content-between" style="max-width:420px;">
-            <button type="button" class="tb-btn-secondary" id="btnToggleEdit">
+        <div style="max-width:200px;">
+            <button type="button"
+                    class="tb-btn-account tb-btn-account-edit"
+                    id="btnToggleEdit">
                 Edit Account
             </button>
         </div>
@@ -160,17 +177,22 @@
                     >
                 </div>
 
-                <button type="submit" class="tb-btn-secondary">
-                    Save Changes
-                </button>
+                <div style="max-width:200px;">
+                    <button type="submit"
+                            class="tb-btn-account tb-btn-account-edit">
+                        Save Changes
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     {{-- DELETE ACCOUNT --}}
     <div class="mb-3">
-        <div class="d-flex align-items-center justify-content-between" style="max-width:420px;">
-            <button type="button" class="tb-btn-danger" id="btnToggleDelete">
+        <div style="max-width:200px;">
+            <button type="button"
+                    class="tb-btn-account tb-btn-account-delete"
+                    id="btnToggleDelete">
                 Delete Account
             </button>
         </div>
@@ -208,29 +230,24 @@
     </div>
 
     {{-- Sign out --}}
-    <div class="mt-4" style="max-width:420px;">
+    <div class="mt-4" style="max-width:200px;">
         <a href="{{ route('logout') }}"
-           class="tb-btn-danger w-100 text-center"
-           style="display:inline-flex;justify-content:center;align-items:center;">
+        class="tb-btn-account tb-btn-account-logout">
             Sign Out
         </a>
     </div>
 
     {{-- Admin / User switch button --}}
     @if($isAdmin)
-        <div class="mt-4" style="max-width:420px;">
+        <div class="mt-4" style="max-width:200px;">
             @if($isAdminPage)
-                {{-- Currently on /a/... -> show User button to go to /u/... --}}
                 <a href="{{ route('home.user', ['username' => $slug]) }}"
-                   class="tb-btn-secondary w-100 text-center"
-                   style="display:inline-flex;justify-content:center;align-items:center;">
+                class="tb-btn-account tb-btn-account-role">
                     User
                 </a>
             @else
-                {{-- Currently on /u/... -> show Admin button to go to /a/... --}}
                 <a href="{{ route('admin.user', ['username' => $slug]) }}"
-                   class="tb-btn-secondary w-100 text-center"
-                   style="display:inline-flex;justify-content:center;align-items:center;">
+                class="tb-btn-account tb-btn-account-role">
                     Admin
                 </a>
             @endif

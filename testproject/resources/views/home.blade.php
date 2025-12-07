@@ -11,6 +11,15 @@
 
 @section('content')
 
+    <style>
+        /* Shared product-card sizing (same as admin) */
+        .tb-product-card {
+            min-height: 340px;   /* keep in sync with admin page */
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+
     {{-- Hero / intro --}}
     <section class="mb-4">
         <div class="tb-card p-4 p-md-4" style="
@@ -115,14 +124,14 @@
             <div class="row g-3">
                 @foreach($products as $product)
                     <div class="col-6 col-md-4 col-lg-3">
-                        <div class="tb-card h-100 overflow-hidden">
+                        <div class="tb-card tb-product-card overflow-hidden">
 
                             {{-- Clickable image --}}
                             <a href="{{ $userId
                                     ? route('products.show.user', ['username' => $userSlug, 'id' => $product['id']])
                                     : route('products.show', $product['id'])
                                 }}"
-                            class="ratio ratio-4x3 d-block">
+                               class="ratio ratio-4x3 d-block">
                                 <img
                                     src="{{ $product['image'] }}"
                                     alt="{{ $product['name'] }}"
@@ -131,62 +140,64 @@
                                 >
                             </a>
 
-                            <div class="p-2 p-md-3">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    @php
-                                        $catId = $product['category_id'];
+                            <div class="p-2 p-md-3 d-flex flex-column h-100">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        @php
+                                            $catId = $product['category_id'];
 
-                                        if (!is_null($catId)) {
-                                            $catUrl   = url('/?category=' . $catId . ($query ? '&q=' . urlencode($query) : ''));
-                                            $catLabel = ucfirst($categoryNames[$catId] ?? 'Unknown');
-                                        } else {
-                                            $catUrl   = null;
-                                            $catLabel = 'Uncategorized';
-                                        }
-                                    @endphp
+                                            if (!is_null($catId)) {
+                                                $catUrl   = url('/?category=' . $catId . ($query ? '&q=' . urlencode($query) : ''));
+                                                $catLabel = ucfirst($categoryNames[$catId] ?? 'Unknown');
+                                            } else {
+                                                $catUrl   = null;
+                                                $catLabel = 'Uncategorized';
+                                            }
+                                        @endphp
 
-                                    @if(!is_null($catId))
-                                        <a
-                                            href="{{ $catUrl }}"
-                                            class="badge rounded-pill"
-                                            style="background:#facc15;color:#111827;font-size:0.7rem;text-decoration:none;cursor:pointer;"
-                                        >
-                                            {{ $catLabel }}
+                                        @if(!is_null($catId))
+                                            <a
+                                                href="{{ $catUrl }}"
+                                                class="badge rounded-pill"
+                                                style="background:#facc15;color:#111827;font-size:0.7rem;text-decoration:none;cursor:pointer;"
+                                            >
+                                                {{ $catLabel }}
+                                            </a>
+                                        @else
+                                            <span
+                                                class="badge rounded-pill"
+                                                style="background:#9ca3af;color:#111827;font-size:0.7rem;"
+                                            >
+                                                {{ $catLabel }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Clickable name --}}
+                                    <h3 class="mb-1" style="font-size:0.9rem;font-weight:600;">
+                                        <a href="{{ $userId
+                                                ? route('products.show.user', ['username' => $userSlug, 'id' => $product['id']])
+                                                : route('products.show', $product['id'])
+                                            }}"
+                                           style="color:inherit;text-decoration:none;">
+                                            {{ $product['name'] }}
                                         </a>
-                                    @else
-                                        <span
-                                            class="badge rounded-pill"
-                                            style="background:#9ca3af;color:#111827;font-size:0.7rem;"
-                                        >
-                                            {{ $catLabel }}
-                                        </span>
-                                    @endif
+                                    </h3>
+
+                                    <p class="mb-2" style="font-size:0.9rem;font-weight:600;color:var(--tb-blue);">
+                                        Rp{{ number_format($product['price'], 0, ',', '.') }}
+                                    </p>
                                 </div>
 
-                                {{-- Clickable name --}}
-                                <h3 class="mb-1" style="font-size:0.9rem;font-weight:600;">
-                                    <a href="{{ $userId
-                                            ? route('products.show.user', ['username' => $userSlug, 'id' => $product['id']])
-                                            : route('products.show', $product['id'])
-                                        }}"
-                                    style="color:inherit;text-decoration:none;">
-                                        {{ $product['name'] }}
-                                    </a>
-                                </h3>
-
-                                <p class="mb-2" style="font-size:0.9rem;font-weight:600;color:var(--tb-blue);">
-                                    Rp{{ number_format($product['price'], 0, ',', '.') }}
-                                </p>
-
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 mt-auto">
                                     @if($userId)
                                         <form method="POST"
-                                            action="{{ route('cart.add', [
-                                                'username' => $userSlug,
-                                                'product'  => $product['id'],
-                                            ]) }}"
-                                            class="flex-fill tb-add-to-cart-form"
-                                            data-max="{{ $product['quantity'] }}">
+                                              action="{{ route('cart.add', [
+                                                  'username' => $userSlug,
+                                                  'product'  => $product['id'],
+                                              ]) }}"
+                                              class="flex-fill tb-add-to-cart-form"
+                                              data-max="{{ $product['quantity'] }}">
                                             @csrf
                                             <input type="hidden" name="quantity" value="1">
 

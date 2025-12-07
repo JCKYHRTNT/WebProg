@@ -79,19 +79,23 @@ Route::post('/a/{username}/account/delete', [AccountController::class, 'destroy'
 // Admin
 Route::middleware('admin')->group(function () {
 
-    // Admin Home: /a/{username}
+    // Admin Home
     Route::get('/a/{username}', [AdminController::class, 'indexForUser'])
         ->name('admin.user');
 
-    // Admin CRUD hub: /a/{username}/admin
+    // Admin CRUD
     Route::get('/a/{username}/admin', [AdminController::class, 'crud'])
         ->name('admin.crud');
 
-    // Register new admin from CRUD hub
-    Route::post('/a/{username}/admin/register', [AdminController::class, 'registerAdmin'])
-        ->name('admin.crud.register');
+    // Promote admin
+    Route::post('/a/{username}/admin/promote', [AdminController::class, 'promoteAdmin'])
+        ->name('admin.crud.promote');
 
-    // ADMIN PRODUCT DETAIL (implicit binding on {product})
+    // Demote admin
+    Route::post('/a/{username}/admin/demote', [AdminController::class, 'demoteAdmin'])
+        ->name('admin.crud.demote');
+
+    // ADMIN PRODUCT DETAIL
     Route::get('/a/{username}/products/{product}', [AdminController::class, 'productDetail'])
         ->name('admin.products.show');
 

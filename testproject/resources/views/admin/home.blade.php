@@ -60,6 +60,27 @@
     .tb-btn-danger:hover {
         background: #ef4444;
     }
+
+    .tb-product-card {
+        min-height: 360px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tb-add-product-card { cursor: pointer; }
+
+    .tb-add-product-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 999px;
+        background: var(--tb-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 600;
+    }
 </style>
 
 {{-- Hero / intro --}}
@@ -75,7 +96,7 @@
                     ADMIN · PRODUCT MANAGEMENT
                 </span>
                 <h1 class="mt-2 mb-2" style="font-size:1.6rem;font-weight:600;">
-                    Manage Products – The Boys
+                    The Boys -  Product Management
                 </h1>
             </div>
         </div>
@@ -165,83 +186,54 @@
 
 {{-- Product cards --}}
 <section>
-    @if($products->isEmpty())
-        <div class="row g-3">
-            {{-- ADD PRODUCT CARD (still visible when empty) --}}
-            <div class="col-6 col-md-4 col-lg-3">
+    <div class="row g-3">
+
+        {{-- ADD PRODUCT CARD (always present, shares product-card sizing) --}}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="tb-card tb-product-card overflow-hidden tb-add-product-card">
                 <button type="button"
-                        class="tb-card h-100 w-100 border-0 d-flex flex-column align-items-center justify-content-center"
+                        class="w-100 h-100 border-0 bg-transparent p-0 d-flex flex-column"
                         data-bs-toggle="modal"
-                        data-bs-target="#modalAddProduct"
-                        style="cursor:pointer;">
-                    <div style="
-                        width:80px;
-                        height:80px;
-                        border-radius:999px;
-                        background:var(--tb-blue);
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        color:#fff;
-                        font-size:2rem;
-                        font-weight:600;
-                        margin-bottom:0.75rem;
-                    ">+</div>
-                    <div style="font-weight:600;font-size:0.95rem;color:#111827;">
-                        Add Product
+                        data-bs-target="#modalAddProduct">
+
+                    {{-- top: same 4x3 area as product image --}}
+                    <div class="ratio ratio-4x3">
+                        <div class="d-flex align-items-center justify-content-center w-100 h-100">
+                            <div class="tb-add-product-circle">+</div>
+                        </div>
+                    </div>
+
+                    {{-- bottom: same padding area as product info --}}
+                    <div class="p-2 p-md-3 d-flex align-items-end justify-content-center">
+                        <div style="font-weight:600;font-size:0.95rem;color:#111827;">
+                            Add Product
+                        </div>
                     </div>
                 </button>
             </div>
         </div>
-    @else
-        <div class="row g-3">
 
-            {{-- ADD PRODUCT CARD --}}
+        {{-- PRODUCTS --}}
+        @forelse($products as $product)
             <div class="col-6 col-md-4 col-lg-3">
-                <button type="button"
-                        class="tb-card h-100 w-100 border-0 d-flex flex-column align-items-center justify-content-center"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalAddProduct"
-                        style="cursor:pointer;">
-                    <div style="
-                        width:80px;
-                        height:80px;
-                        border-radius:999px;
-                        background:var(--tb-blue);
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        color:#fff;
-                        font-size:2rem;
-                        font-weight:600;
-                        margin-bottom:0.75rem;
-                    ">+</div>
-                    <div style="font-weight:600;font-size:0.95rem;color:#111827;">
-                        Add Product
-                    </div>
-                </button>
-            </div>
+                <div class="tb-card tb-product-card overflow-hidden">
 
-            {{-- PRODUCTS --}}
-            @foreach($products as $product)
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="tb-card h-100 overflow-hidden">
+                    {{-- Clickable image --}}
+                    <a href="{{ route('admin.products.show', [
+                            'username' => $adminSlug,
+                            'product'  => $product->id,
+                        ]) }}"
+                       class="ratio ratio-4x3 d-block">
+                        <img
+                            src="{{ $product->image }}"
+                            alt="{{ $product->name }}"
+                            class="w-100 h-100"
+                            style="object-fit:cover;"
+                        >
+                    </a>
 
-                        {{-- Clickable image --}}
-                        <a href="{{ route('admin.products.show', [
-                                'username' => $adminSlug,
-                                'product'  => $product->id,
-                            ]) }}"
-                        class="ratio ratio-4x3 d-block">
-                            <img
-                                src="{{ $product->image }}"
-                                alt="{{ $product->name }}"
-                                class="w-100 h-100"
-                                style="object-fit:cover;"
-                            >
-                        </a>
-
-                        <div class="p-2 p-md-3">
+                    <div class="p-2 p-md-3 d-flex flex-column h-100">
+                        <div>
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 @php
                                     $catId = $product->category_id;
@@ -279,7 +271,7 @@
                                         'username' => $adminSlug,
                                         'product'  => $product->id,
                                     ]) }}"
-                                style="color:inherit;text-decoration:none;">
+                                   style="color:inherit;text-decoration:none;">
                                     {{ $product->name }}
                                 </a>
                             </h3>
@@ -293,38 +285,40 @@
                             <p class="mb-2" style="font-size:0.8rem;color:#4b5563;">
                                 Stock: {{ $product->quantity }}
                             </p>
-
-                            {{-- ADMIN ACTIONS --}}
-                            <div class="d-flex gap-2 mt-1">
-                                <a href="{{ route('admin.products.edit', [
-                                        'username' => $adminSlug,
-                                        'product'  => $product->id,
-                                    ]) }}"
-                                class="tb-btn-secondary flex-fill text-center">
-                                    Edit
-                                </a>
-
-                                <form method="POST"
-                                      action="{{ route('admin.products.destroy', [
-                                            'username' => $adminSlug,
-                                            'product'  => $product->id,
-                                      ]) }}"
-                                      class="flex-fill m-0 p-0"
-                                      onsubmit="return confirm('Delete this product?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="tb-btn-danger w-100">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
                         </div>
 
+                        {{-- ADMIN ACTIONS --}}
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="{{ route('admin.products.edit', [
+                                    'username' => $adminSlug,
+                                    'product'  => $product->id,
+                                ]) }}"
+                               class="tb-btn-secondary flex-fill text-center">
+                                Edit
+                            </a>
+
+                            <form method="POST"
+                                  action="{{ route('admin.products.destroy', [
+                                        'username' => $adminSlug,
+                                        'product'  => $product->id,
+                                  ]) }}"
+                                  class="flex-fill m-0 p-0"
+                                  onsubmit="return confirm('Delete this product?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="tb-btn-danger w-100">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
                     </div>
+
                 </div>
-            @endforeach
-        </div>
-    @endif
+            </div>
+        @empty
+            {{-- nothing extra; Add Product card is already shown --}}
+        @endforelse
+    </div>
 </section>
 
 <script>

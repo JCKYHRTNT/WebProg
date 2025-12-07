@@ -172,7 +172,7 @@
                 @endif
 
                 {{-- ADMIN --}}
-                @if($loggedIn && $isAdmin)
+                @if($loggedIn && $isAdmin && str_starts_with(Route::currentRouteName(), 'admin.'))
                     <a href="{{ route('admin.crud', ['username' => $userSlug]) }}"
                     class="tb-pill-link d-inline-flex align-items-center"
                     style="gap:0.35rem;">

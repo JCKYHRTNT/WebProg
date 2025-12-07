@@ -72,12 +72,25 @@
             <div class="tb-card p-3 h-100">
                 <div style="font-size:0.8rem;color:var(--tb-gray-text);">Admins</div>
                 <div style="font-size:1.4rem;font-weight:700;">{{ $adminCount }}</div>
+
+                {{-- Promote to admin --}}
                 <button type="button"
-                        class="tb-btn-secondary mt-2"
+                    class="tb-btn-secondary mt-2"
+                    style="font-size:0.8rem;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCreateAdmin"
+                    @if(empty($eligibleUsers) || collect($eligibleUsers)->isEmpty()) disabled @endif>
+                + Promote Admin
+            </button>
+
+                {{-- Demote admin --}}
+                <button type="button"
+                        class="tb-btn-danger mt-2"
                         style="font-size:0.8rem;"
                         data-bs-toggle="modal"
-                        data-bs-target="#modalCreateAdmin">
-                    + Register Admin
+                        data-bs-target="#modalDemoteAdmin"
+                        @if(empty($demotableAdmins) || collect($demotableAdmins)->isEmpty()) disabled @endif>
+                    Demote Admin
                 </button>
             </div>
         </div>
@@ -200,9 +213,6 @@
                 </div>
                 <div class="modal-body">
                     <p id="deleteCategoryText" style="margin:0;font-size:0.9rem;"></p>
-                    <p class="mt-2 mb-0" style="font-size:0.8rem;color:var(--tb-gray-text);">
-                        This may also delete products if you use cascading deletes.
-                    </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -213,42 +223,81 @@
     </div>
 </div>
 
-{{-- REGISTER ADMIN MODAL --}}
+{{-- PROMOTE ADMIN MODAL --}}
 <div class="modal fade" id="modalCreateAdmin" tabindex="-1" aria-labelledby="modalCreateAdminLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('admin.crud.register', ['username' => $adminSlug]) }}">
+            <form method="POST" action="{{ route('admin.crud.promote', ['username' => $adminSlug]) }}">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalCreateAdminLabel">Register New Admin</h5>
+                    <h5 class="modal-title" id="modalCreateAdminLabel">Promote User to Admin</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
 
                     <div class="mb-2">
-                        <label class="form-label" for="admin_name">Name</label>
-                        <input type="text" id="admin_name" name="name" class="form-control" required>
+                        <label class="form-label" for="admin_user_id">Select User</label>
+                        <select id="admin_user_id" name="user_id" class="form-select" required>
+                            <option value="">— Choose a user —</option>
+                            @foreach($eligibleUsers as $user)
+                                <option value="{{ $user->id }}">
+                                    {{ $user->name }} ({{ $user->email }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="mb-2">
-                        <label class="form-label" for="admin_email">Email</label>
-                        <input type="email" id="admin_email" name="email" class="form-control" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label" for="admin_password">Password</label>
-                        <input type="password" id="admin_password" name="password" class="form-control" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label" for="admin_password_confirmation">Confirm Password</label>
-                        <input type="password" id="admin_password_confirmation" name="password_confirmation" class="form-control" required>
+                        <label class="form-label" for="admin_current_password">Your Password</label>
+                        <input type="password" id="admin_current_password" name="current_password" class="form-control" required>
                     </div>
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="tb-btn-secondary">Create Admin</button>
+                    <button type="submit" class="tb-btn-secondary">Promote to Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- DEMOTE ADMIN MODAL --}}
+<div class="modal fade" id="modalDemoteAdmin" tabindex="-1" aria-labelledby="modalDemoteAdminLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.crud.demote', ['username' => $adminSlug]) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDemoteAdminLabel">Demote Admin to User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-2">
+                        <label class="form-label" for="demote_user_id">Select Admin</label>
+                        <select id="demote_user_id" name="user_id" class="form-select" required>
+                            <option value="">— Choose an admin —</option>
+                            @foreach($demotableAdmins as $admin)
+                                <option value="{{ $admin->id }}">
+                                    {{ $admin->name }} ({{ $admin->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label" for="demote_current_password">Your Password</label>
+                        <input type="password" id="demote_current_password" name="current_password" class="form-control" required>
+                    </div>
+
+                    <p class="mt-2 mb-0" style="font-size:0.8rem;color:var(--tb-gray-text);">
+                        The selected admin will be changed back to a regular user.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="tb-btn-danger">Demote</button>
                 </div>
             </form>
         </div>
