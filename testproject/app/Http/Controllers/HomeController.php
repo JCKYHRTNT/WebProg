@@ -10,18 +10,19 @@ use Illuminate\Support\Str;
 class HomeController extends Controller
 {
     /**
-     * Homepage: list products with category + search filters.
+     * Guest + user home (product list).
      */
     public function home(Request $request)
     {
-        $categoryId = $request->filled('category') ? (int) $request->input('category') : null;
+        $categoryId = $request->filled('category')
+            ? (int) $request->input('category')
+            : null;
 
         $query = $request->input('q');
 
         // Load categories
         $categories = Category::orderBy('name')->get();
 
-        // Map id → name for Blade
         $categoryNames = $categories
             ->pluck('name', 'id')
             ->toArray();
@@ -48,12 +49,15 @@ class HomeController extends Controller
         if (!is_null($categoryId) && $categories->pluck('id')->contains($categoryId)) {
             $selected = $categories->firstWhere('id', $categoryId);
 
-            $recentCategories = collect([$selected])->merge(
-                $categories->where('id', '!=', $categoryId)
-            );
+            $recentCategories = collect([$selected])
+                ->merge($categories->where('id', '!=', $categoryId));
         }
 
-        $recentCategories = $recentCategories->take(3);
+        $recentCategories = $recentCategories
+            ->take(3)
+            ->map(fn ($cat) => ['id' => $cat->id, 'name' => $cat->name])
+            ->values()
+            ->all();
 
         return view('home', [
             'products'         => $products,
@@ -65,6 +69,9 @@ class HomeController extends Controller
         ]);
     }
 
+    /**
+     * User home: /u/{username}
+     */
     public function homeForUser(Request $request, string $username)
     {
         if (!session('user_id')) {
@@ -74,30 +81,24 @@ class HomeController extends Controller
         $sessionName  = session('name');
         $expectedSlug = Str::slug($sessionName);
 
+        // Prevent accessing another user’s URL
         if ($username !== $expectedSlug) {
             return redirect()->route('home.user', [
                 'username' => $expectedSlug,
             ] + $request->query());
         }
+
+        // Re-use same listing logic
         return $this->home($request);
     }
-    
-    /**
-     * Product detail page.
-     */
-    public function productDetail(Request $request, $param1, $param2 = null)
-    {
-        $id = $param2 ?? $param1;
 
+    /**
+     * Guest / user product detail (admin detail is in AdminController now).
+     */
+    public function productDetail(int $id)
+    {
         $product = Product::with('category')->findOrFail($id);
 
-        if ($request->routeIs('products.show.admin')) {
-            return view('productdetail_admin', [
-                'product' => $product,
-            ]);
-        }
-
-        // Guest / user detail view
         return view('productdetail', [
             'product' => $product,
         ]);

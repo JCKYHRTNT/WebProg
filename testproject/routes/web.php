@@ -16,7 +16,7 @@ Route::get('/u/{username}', [HomeController::class, 'homeForUser'])
     ->middleware('auth.user')
     ->name('home.user');
 
-// Guest Product Detail
+// Guest Product Detail (user/guest only)
 Route::get('/products/{id}', [HomeController::class, 'productDetail'])
     ->name('products.show');
 
@@ -24,11 +24,6 @@ Route::get('/products/{id}', [HomeController::class, 'productDetail'])
 Route::get('/u/{username}/products/{id}', [HomeController::class, 'productDetail'])
     ->middleware('auth.user')
     ->name('products.show.user');
-
-// Admin Product Detail
-Route::get('/a/{username}/products/{id}', [HomeController::class, 'productDetail'])
-    ->middleware('admin')
-    ->name('products.show.admin');
 
 // Guest cart
 Route::get('/cart', fn () => redirect()->route('login'))
@@ -84,9 +79,21 @@ Route::post('/a/{username}/account/delete', [AccountController::class, 'destroy'
 // Admin
 Route::middleware('admin')->group(function () {
 
-    // Admin Home
+    // Admin Home: /a/{username}
     Route::get('/a/{username}', [AdminController::class, 'indexForUser'])
         ->name('admin.user');
+
+    // Admin CRUD hub: /a/{username}/admin
+    Route::get('/a/{username}/admin', [AdminController::class, 'crud'])
+        ->name('admin.crud');
+
+    // Register new admin from CRUD hub
+    Route::post('/a/{username}/admin/register', [AdminController::class, 'registerAdmin'])
+        ->name('admin.crud.register');
+
+    // ADMIN PRODUCT DETAIL (implicit binding on {product})
+    Route::get('/a/{username}/products/{product}', [AdminController::class, 'productDetail'])
+        ->name('admin.products.show');
 
     // PRODUCT CRUD
     Route::post('/a/{username}/products', [AdminController::class, 'storeProduct'])
@@ -101,7 +108,7 @@ Route::middleware('admin')->group(function () {
     Route::delete('/a/{username}/products/{product}', [AdminController::class, 'destroyProduct'])
         ->name('admin.products.destroy');
 
-    // Category CRUD
+    // CATEGORY CRUD
     Route::post('/a/{username}/categories', [AdminController::class, 'storeCategory'])
         ->name('admin.categories.store');
 

@@ -2,8 +2,10 @@
     <div class="tb-container">
 
         @php
+            use Illuminate\Support\Str;
+
             $loggedIn = session('user_id') !== null;
-            $userSlug = $loggedIn ? \Illuminate\Support\Str::slug(session('name')) : null;
+            $userSlug = $loggedIn ? Str::slug(session('name')) : null;
             $isAdmin  = $loggedIn && session('role') === 'admin';
 
             // detect current URL context
@@ -11,7 +13,7 @@
             $onUserContext  = request()->is('u/*');
 
             // base URL for search/filter
-            if ($onAdminContext && $loggedIn && $isAdmin && $userSlug) {
+            if ($onAdminContext && $loggedIn && $userSlug) {
                 $searchBaseUrl = url('/a/'.$userSlug);
             } elseif ($onUserContext && $loggedIn && $userSlug) {
                 $searchBaseUrl = url('/u/'.$userSlug);
@@ -129,42 +131,70 @@
 
                 {{-- HOME --}}
                 @if($loggedIn)
-                    @if($isAdmin)
+                    @if($onAdminContext)
                         <a href="{{ route('admin.user', ['username' => $userSlug]) }}"
-                           class="tb-pill-link d-inline-flex align-items-center"
-                           style="gap:0.35rem;">
+                        class="tb-pill-link d-inline-flex align-items-center"
+                        style="gap:0.35rem;">
+                            <img src="{{ asset('images/home_icon.png') }}" alt="Home" style="height:16px;width:16px;opacity:0.85;">
+                            Home
+                        </a>
+                    @elseif($onUserContext)
+                        <a href="{{ route('home.user', ['username' => $userSlug]) }}"
+                        class="tb-pill-link d-inline-flex align-items-center"
+                        style="gap:0.35rem;">
                             <img src="{{ asset('images/home_icon.png') }}" alt="Home" style="height:16px;width:16px;opacity:0.85;">
                             Home
                         </a>
                     @else
-                        <a href="{{ route('home.user', ['username' => $userSlug]) }}"
-                           class="tb-pill-link d-inline-flex align-items-center"
-                           style="gap:0.35rem;">
-                            <img src="{{ asset('images/home_icon.png') }}" alt="Home" style="height:16px;width:16px;opacity:0.85;">
-                            Home
-                        </a>
+                        @if($isAdmin)
+                            <a href="{{ route('admin.user', ['username' => $userSlug]) }}"
+                            class="tb-pill-link d-inline-flex align-items-center"
+                            style="gap:0.35rem;">
+                                <img src="{{ asset('images/home_icon.png') }}" alt="Home" style="height:16px;width:16px;opacity:0.85;">
+                                Home
+                            </a>
+                        @else
+                            <a href="{{ route('home.user', ['username' => $userSlug]) }}"
+                            class="tb-pill-link d-inline-flex align-items-center"
+                            style="gap:0.35rem;">
+                                <img src="{{ asset('images/home_icon.png') }}" alt="Home" style="height:16px;width:16px;opacity:0.85;">
+                                Home
+                            </a>
+                        @endif
                     @endif
                 @else
                     <a href="{{ route('home') }}"
-                       class="tb-pill-link d-inline-flex align-items-center"
-                       style="gap:0.35rem;">
+                    class="tb-pill-link d-inline-flex align-items-center"
+                    style="gap:0.35rem;">
                         <img src="{{ asset('images/home_icon.png') }}" alt="Home" style="height:16px;width:16px;opacity:0.85;">
                         Home
                     </a>
                 @endif
 
-                {{-- CART (hidden for admin) --}}
-                @if($loggedIn && !$isAdmin)
+                {{-- ADMIN --}}
+                @if($loggedIn && $isAdmin)
+                    <a href="{{ route('admin.crud', ['username' => $userSlug]) }}"
+                    class="tb-pill-link d-inline-flex align-items-center"
+                    style="gap:0.35rem;">
+                        <img src="{{ asset('images/admin_icon.png') }}"
+                            alt="Admin"
+                            style="height:16px;width:16px;opacity:0.85;">
+                        Admin
+                    </a>
+                @endif
+
+                {{-- CART --}}
+                @if($loggedIn && $onUserContext)
                     <a href="{{ route('cart', ['username' => $userSlug]) }}"
-                       class="tb-pill-link d-inline-flex align-items-center"
-                       style="gap:0.35rem;">
+                    class="tb-pill-link d-inline-flex align-items-center"
+                    style="gap:0.35rem;">
                         <img src="{{ asset('images/cart_icon.png') }}" alt="Cart" style="height:16px;width:16px;opacity:0.85;">
                         Cart
                     </a>
                 @elseif(!$loggedIn)
                     <a href="{{ route('cart.redirect') }}"
-                       class="tb-pill-link d-inline-flex align-items-center"
-                       style="gap:0.35rem;">
+                    class="tb-pill-link d-inline-flex align-items-center"
+                    style="gap:0.35rem;">
                         <img src="{{ asset('images/cart_icon.png') }}" alt="Cart" style="height:16px;width:16px;opacity:0.85;">
                         Cart
                     </a>
@@ -172,25 +202,25 @@
 
                 {{-- ACCOUNT / LOGIN --}}
                 @if($loggedIn)
-                    @if($isAdmin)
+                    @if($onAdminContext)
                         <a href="{{ route('account.admin', ['username' => $userSlug]) }}"
-                           class="tb-pill-link d-inline-flex align-items-center"
-                           style="gap:0.35rem;">
+                        class="tb-pill-link d-inline-flex align-items-center"
+                        style="gap:0.35rem;">
                             <img src="{{ asset('images/account_icon.png') }}" alt="Account" style="height:16px;width:16px;opacity:0.85;">
                             Account
                         </a>
                     @else
                         <a href="{{ route('account', ['username' => $userSlug]) }}"
-                           class="tb-pill-link d-inline-flex align-items-center"
-                           style="gap:0.35rem;">
+                        class="tb-pill-link d-inline-flex align-items-center"
+                        style="gap:0.35rem;">
                             <img src="{{ asset('images/account_icon.png') }}" alt="Account" style="height:16px;width:16px;opacity:0.85;">
                             Account
                         </a>
                     @endif
                 @else
                     <a href="{{ route('login') }}"
-                       class="tb-pill-link d-inline-flex align-items-center"
-                       style="gap:0.35rem;">
+                    class="tb-pill-link d-inline-flex align-items-center"
+                    style="gap:0.35rem;">
                         <img src="{{ asset('images/account_icon.png') }}" alt="Login" style="height:16px;width:16px;opacity:0.85;">
                         Login
                     </a>

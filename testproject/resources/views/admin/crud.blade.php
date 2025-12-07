@@ -1,0 +1,292 @@
+@extends('layouts.master')
+
+@section('title', 'Admin – Management – The Boys')
+
+@php
+    use Illuminate\Support\Str;
+    $adminSlug = Str::slug(session('name'));
+@endphp
+
+@section('content')
+
+<style>
+    .tb-btn-secondary {
+        display:inline-flex;align-items:center;justify-content:center;
+        background:var(--tb-blue);color:#fff;border-radius:999px;
+        padding:0.4rem 0.9rem;font-size:0.85rem;font-weight:500;
+        border:none;cursor:pointer;text-decoration:none;
+    }
+    .tb-btn-secondary:hover { filter:brightness(1.12); }
+
+    .tb-btn-danger {
+        display:inline-flex;align-items:center;justify-content:center;
+        background:#dc2626;color:#fff;border-radius:999px;
+        padding:0.4rem 0.9rem;font-size:0.85rem;font-weight:500;
+        border:none;cursor:pointer;text-decoration:none;
+    }
+    .tb-btn-danger:hover { background:#ef4444; }
+</style>
+
+<div class="tb-card p-4 p-md-5 mb-3">
+    <h1 style="font-size:1.6rem;font-weight:600;margin-bottom:1rem;">
+        Admin Management
+    </h1>
+
+    {{-- FLASH --}}
+    @if(session('success'))
+        <div class="alert alert-success py-2">{{ session('success') }}</div>
+    @endif
+    @if(session('status'))
+        <div class="alert alert-success py-2">{{ session('status') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger py-2">{{ session('error') }}</div>
+    @endif
+
+    {{-- STATS --}}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="tb-card p-3 h-100">
+                <div style="font-size:0.8rem;color:var(--tb-gray-text);">Products</div>
+                <div style="font-size:1.4rem;font-weight:700;">{{ $productCount }}</div>
+                <a href="{{ route('admin.user', ['username' => $adminSlug]) }}"
+                   class="tb-btn-secondary mt-2" style="font-size:0.8rem;">
+                    Go to Product Home
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="tb-card p-3 h-100">
+                <div style="font-size:0.8rem;color:var(--tb-gray-text);">Categories</div>
+                <div style="font-size:1.4rem;font-weight:700;">{{ $categoryCount }}</div>
+                <button type="button"
+                        class="tb-btn-secondary mt-2"
+                        style="font-size:0.8rem;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalCreateCategory">
+                    + New Category
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="tb-card p-3 h-100">
+                <div style="font-size:0.8rem;color:var(--tb-gray-text);">Admins</div>
+                <div style="font-size:1.4rem;font-weight:700;">{{ $adminCount }}</div>
+                <button type="button"
+                        class="tb-btn-secondary mt-2"
+                        style="font-size:0.8rem;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalCreateAdmin">
+                    + Register Admin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- CATEGORY LIST --}}
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:0.5rem;">Categories</h2>
+    <div class="tb-card p-3 mb-4">
+        @if($categories->isEmpty())
+            <p style="font-size:0.9rem;color:var(--tb-gray-text);margin:0;">
+                No categories yet.
+            </p>
+        @else
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">ID</th>
+                        <th>Name</th>
+                        <th style="width:160px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($categories as $cat)
+                        <tr>
+                            <td>{{ $cat->id }}</td>
+                            <td>{{ $cat->name }}</td>
+                            <td>
+                                <div class="d-flex" style="gap:0.35rem;">
+                                    <button type="button"
+                                            class="tb-btn-secondary"
+                                            style="font-size:0.75rem;padding:0.25rem 0.7rem;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEditCategory"
+                                            data-id="{{ $cat->id }}"
+                                            data-name="{{ $cat->name }}">
+                                        Edit
+                                    </button>
+
+                                    <button type="button"
+                                            class="tb-btn-danger"
+                                            style="font-size:0.75rem;padding:0.25rem 0.7rem;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalDeleteCategory"
+                                            data-id="{{ $cat->id }}"
+                                            data-name="{{ $cat->name }}">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+
+</div>
+
+{{-- CREATE CATEGORY MODAL --}}
+<div class="modal fade" id="modalCreateCategory" tabindex="-1" aria-labelledby="modalCreateCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.categories.store', ['username' => $adminSlug]) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCreateCategoryLabel">New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label" for="cat_new_name">Name</label>
+                        <input type="text" id="cat_new_name" name="name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="tb-btn-secondary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- EDIT CATEGORY MODAL --}}
+<div class="modal fade" id="modalEditCategory" tabindex="-1" aria-labelledby="modalEditCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="formEditCategory">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditCategoryLabel">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label" for="cat_edit_name">Name</label>
+                        <input type="text" id="cat_edit_name" name="name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="tb-btn-secondary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- DELETE CATEGORY MODAL --}}
+<div class="modal fade" id="modalDeleteCategory" tabindex="-1" aria-labelledby="modalDeleteCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="formDeleteCategory">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDeleteCategoryLabel">Delete Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteCategoryText" style="margin:0;font-size:0.9rem;"></p>
+                    <p class="mt-2 mb-0" style="font-size:0.8rem;color:var(--tb-gray-text);">
+                        This may also delete products if you use cascading deletes.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="tb-btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- REGISTER ADMIN MODAL --}}
+<div class="modal fade" id="modalCreateAdmin" tabindex="-1" aria-labelledby="modalCreateAdminLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.crud.register', ['username' => $adminSlug]) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCreateAdminLabel">Register New Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-2">
+                        <label class="form-label" for="admin_name">Name</label>
+                        <input type="text" id="admin_name" name="name" class="form-control" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label" for="admin_email">Email</label>
+                        <input type="email" id="admin_email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label" for="admin_password">Password</label>
+                        <input type="password" id="admin_password" name="password" class="form-control" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label" for="admin_password_confirmation">Confirm Password</label>
+                        <input type="password" id="admin_password_confirmation" name="password_confirmation" class="form-control" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="tb-btn-secondary">Create Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editModal = document.getElementById('modalEditCategory');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id     = button.getAttribute('data-id');
+                const name   = button.getAttribute('data-name');
+
+                const form   = document.getElementById('formEditCategory');
+                const input  = document.getElementById('cat_edit_name');
+
+                form.action = "{{ url('/a/'.$adminSlug.'/categories') }}/" + id;
+                input.value = name;
+            });
+        }
+
+        const deleteModal = document.getElementById('modalDeleteCategory');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id     = button.getAttribute('data-id');
+                const name   = button.getAttribute('data-name');
+
+                const form   = document.getElementById('formDeleteCategory');
+                const text   = document.getElementById('deleteCategoryText');
+
+                form.action = "{{ url('/a/'.$adminSlug.'/categories') }}/" + id;
+                text.textContent = "Delete category \"" + name + "\"?";
+            });
+        }
+    });
+</script>
+
+@endsection

@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
     /**
-     * Show admin dashboard with lists of products and categories.
+     * Admin dashboard (product list) – used by /a/{username}
      */
     public function index(Request $request)
     {
-        // Same filter logic as home()
         $categoryId = $request->filled('category')
             ? (int) $request->input('category')
             : null;
@@ -22,18 +23,16 @@ class AdminController extends Controller
         $query = $request->input('q');
 
         // Categories
-        $categories = Category::orderBy('name')->get();
+        $categories    = Category::orderBy('name')->get();
         $categoryNames = $categories->pluck('name', 'id')->toArray();
 
         // Base product query
         $productsQuery = Product::with('category');
 
-        // Filter by category
         if (!is_null($categoryId)) {
             $productsQuery->where('category_id', $categoryId);
         }
 
-        // Filter by search
         if ($query) {
             $q = strtolower($query);
             $productsQuery->whereRaw('LOWER(name) LIKE ?', ["%{$q}%"]);
@@ -41,7 +40,7 @@ class AdminController extends Controller
 
         $products = $productsQuery->orderBy('id')->get();
 
-        // Recent categories (max 3) – same idea as home()
+        // Recent categories (max 3)
         $recentCategories = $categories;
 
         if (!is_null($categoryId) && $categories->pluck('id')->contains($categoryId)) {
@@ -58,7 +57,7 @@ class AdminController extends Controller
             ->values()
             ->all();
 
-        return view('admin', [
+        return view('admin.home', [
             'products'         => $products,
             'categories'       => $categories,
             'categoryId'       => $categoryId,
@@ -69,7 +68,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Admin dashboard with username in URL: /a/{username}
+     * /a/{username}
      */
     public function indexForUser(Request $request, string $username)
     {
@@ -90,9 +89,91 @@ class AdminController extends Controller
     }
 
     /**
-     * Store a new product.
+     * Admin product detail.
+     * Route: /a/{username}/products/{product}
      */
-    public function storeProduct(Request $request)
+    public function productDetail(Request $request, string $username, Product $product)
+    {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $expectedSlug = Str::slug(session('name'));
+
+        if ($username !== $expectedSlug) {
+            return redirect()->route('admin.products.show', [
+                'username' => $expectedSlug,
+                'product'  => $product->id,
+            ]);
+        }
+
+        $categories = Category::orderBy('name')->get();
+
+        return view('admin.productdetail', [
+            'product'    => $product,
+            'categories' => $categories,
+        ]);
+    }
+
+    /**
+     * Admin CRUD hub: /a/{username}/admin
+     */
+    public function crud(Request $request, string $username)
+    {
+        if (!session('user_id')) {
+            return redirect()->route('login');
+        }
+
+        $sessionName  = session('name');
+        $expectedSlug = Str::slug($sessionName);
+
+        if ($username !== $expectedSlug) {
+            return redirect()->route('admin.crud', [
+                'username' => $expectedSlug,
+            ] + $request->query());
+        }
+
+        $productCount  = Product::count();
+        $categoryCount = Category::count();
+        $adminCount    = User::where('role', 'admin')->count();
+
+        return view('admin.crud', [
+            'productCount'  => $productCount,
+            'categoryCount' => $categoryCount,
+            'adminCount'    => $adminCount,
+            'categories'    => Category::orderBy('id')->get(),
+        ]);
+    }
+
+    /**
+     * Register a new admin from the CRUD hub.
+     */
+    public function registerAdmin(Request $request, string $username)
+    {
+        $data = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'min:4', 'confirmed'],
+        ]);
+
+        User::create([
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role'     => 'admin',
+            'profpic'  => null,
+        ]);
+
+        $slug = Str::slug(session('name'));
+
+        return redirect()
+            ->route('admin.crud', ['username' => $slug])
+            ->with('success', 'New admin account created.');
+    }
+
+    // ===== PRODUCT CRUD =====
+
+    public function storeProduct(Request $request, string $username)
     {
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
@@ -100,7 +181,7 @@ class AdminController extends Controller
             'description' => ['nullable', 'string'],
             'quantity'    => ['required', 'integer', 'min:0'],
             'category_id' => ['nullable', 'exists:categories,id'],
-            'image'       => ['nullable', 'string', 'max:255'], // path or URL
+            'image'       => ['nullable', 'string', 'max:255'],
         ]);
 
         Product::create($data);
@@ -112,26 +193,13 @@ class AdminController extends Controller
             ->with('status', 'Product created.');
     }
 
-    /**
-     * Edit product.
-     * Route: /admin/products/{product}/edit
-     * {product} is the product ID (implicit binding).
-     */
-    public function editProduct(Product $product)
+    // editing from anywhere just reuses productDetail + same Blade
+    public function editProduct(Request $request, string $username, Product $product)
     {
-        $categories = Category::orderBy('name')->get();
-
-        return view('admin_edit_product', [
-            'product'    => $product,
-            'categories' => $categories,
-        ]);
+        return $this->productDetail($request, $username, $product);
     }
 
-    /**
-     * Update product.
-     * Route: PUT /admin/products/{product}
-     */
-    public function updateProduct(Request $request, Product $product)
+    public function updateProduct(Request $request, string $username, Product $product)
     {
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
@@ -147,15 +215,11 @@ class AdminController extends Controller
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.user', ['username' => $slug])
+            ->route('admin.products.show', ['username' => $slug, 'product' => $product->id])
             ->with('status', 'Product updated.');
     }
 
-    /**
-     * Delete product.
-     * Route: DELETE /admin/products/{product}
-     */
-    public function destroyProduct(Product $product)
+    public function destroyProduct(string $username, Product $product)
     {
         $product->delete();
 
@@ -166,10 +230,8 @@ class AdminController extends Controller
             ->with('status', 'Product deleted.');
     }
 
-    /**
-     * Store a new category.
-     */
-    public function storeCategory(Request $request)
+    // ===== CATEGORY CRUD =====
+    public function storeCategory(Request $request, string $username)
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
@@ -180,27 +242,18 @@ class AdminController extends Controller
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.user', ['username' => $slug])
+            ->route('admin.crud', ['username' => $slug])  // <-- go back to CRUD page
             ->with('status', 'Category created.');
     }
 
-    /**
-     * Edit category.
-     * Route: /admin/categories/{category}/edit
-     * {category} is the category ID.
-     */
-    public function editCategory(Category $category)
+    public function editCategory(string $username, Category $category)
     {
         return view('admin_edit_category', [
             'category' => $category,
         ]);
     }
 
-    /**
-     * Update category name.
-     * Route: PUT /admin/categories/{category}
-     */
-    public function updateCategory(Request $request, Category $category)
+    public function updateCategory(Request $request, string $username, Category $category)
     {
         $data = $request->validate([
             'name' => [
@@ -216,25 +269,18 @@ class AdminController extends Controller
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.user', ['username' => $slug])
+            ->route('admin.crud', ['username' => $slug])  // <-- CRUD page
             ->with('status', 'Category updated.');
     }
 
-    /**
-     * Delete category.
-     * Route: DELETE /admin/categories/{category}
-     *
-     * Note: if products reference this category and you set FK onDelete('cascade'),
-     * deleting the category will also delete those products.
-     */
-    public function destroyCategory(Category $category)
+    public function destroyCategory(string $username, Category $category)
     {
         $category->delete();
 
         $slug = Str::slug(session('name'));
 
         return redirect()
-            ->route('admin.user', ['username' => $slug])
+            ->route('admin.crud', ['username' => $slug])  // <-- CRUD page
             ->with('status', 'Category deleted.');
     }
 }
