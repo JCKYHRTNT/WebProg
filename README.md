@@ -40,8 +40,7 @@ Users can browse products, manage a shopping cart, update their account, and adm
 
 **Tooling:**  
 - Composer  
-- Node.js + npm (optional, current UI does not require Vite)  
-- Vite 6, Tailwind CSS 3 (configured but not used in production UI)  
+- Node.js
 
 ---
 
