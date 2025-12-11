@@ -226,7 +226,7 @@
                         ]) }}"
                        class="ratio ratio-4x3 d-block">
                         <img
-                            src="{{ $product->image }}"
+                            src="{{ asset($product->image) }}"
                             alt="{{ $product->name }}"
                             class="w-100 h-100"
                             style="object-fit:cover;"

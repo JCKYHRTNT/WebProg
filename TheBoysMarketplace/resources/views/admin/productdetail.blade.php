@@ -44,7 +44,7 @@
         <div class="col-md-5">
             <div class="ratio ratio-4x3">
                 <img
-                    src="{{ $product->image }}"
+                    src="{{ asset($product->image) }}"
                     alt="{{ $product->name }}"
                     class="w-100 h-100"
                     style="object-fit:cover;"
