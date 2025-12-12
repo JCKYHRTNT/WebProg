@@ -18,10 +18,9 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-        'name'     => ['required', 'string', 'max:255'],
-        'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-        'password' => ['required', 'min:4', 'confirmed'],
-    ]);
+            'email'    => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
         $user = User::where('email', $request->email)->first();
 
@@ -36,6 +35,7 @@ class LoginController extends Controller
             'role'    => $user->role,
         ]);
 
+        // Use accessor on User model
         $slug = $user->slug;
 
         if ($user->role === 'admin') {
@@ -78,7 +78,7 @@ class LoginController extends Controller
             'role'    => $user->role,
         ]);
 
-        $slug = Str::slug($user->name);
+        $slug = $user->slug;
 
         return redirect()
             ->route('home.user', ['username' => $slug])
