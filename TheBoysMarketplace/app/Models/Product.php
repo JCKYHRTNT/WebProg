@@ -27,4 +27,13 @@ class Product extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image && file_exists(public_path($this->image))) {
+            return asset($this->image);
+        }
+
+        return asset('images/default_product.png');
+    }
 }

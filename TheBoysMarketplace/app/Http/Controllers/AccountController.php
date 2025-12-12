@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AccountController extends Controller
 {
@@ -18,16 +17,16 @@ class AccountController extends Controller
             return redirect()->route('login')->with('error', 'Please login first.');
         }
 
-        $user = User::findOrFail(session('user_id'));
-        $expectedSlug = Str::slug($user->name);
+        $user         = User::findOrFail(session('user_id'));
+        $expectedSlug = $user->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('account', ['username' => $expectedSlug]);
         }
 
         return view('account', [
-            'user'          => $user,
-            'isAdminPage'   => false,
+            'user'        => $user,
+            'isAdminPage' => false,
         ]);
     }
 
@@ -40,16 +39,16 @@ class AccountController extends Controller
             return redirect()->route('login')->with('error', 'Please login first.');
         }
 
-        $user = User::findOrFail(session('user_id'));
-        $expectedSlug = Str::slug($user->name);
+        $user         = User::findOrFail(session('user_id'));
+        $expectedSlug = $user->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('account.admin', ['username' => $expectedSlug]);
         }
 
         return view('account', [
-            'user'          => $user,
-            'isAdminPage'   => true,
+            'user'        => $user,
+            'isAdminPage' => true,
         ]);
     }
 
@@ -62,8 +61,8 @@ class AccountController extends Controller
             return redirect()->route('login')->with('error', 'Please login first.');
         }
 
-        $user = User::findOrFail(session('user_id'));
-        $expectedSlug = Str::slug($user->name);
+        $user         = User::findOrFail(session('user_id'));
+        $expectedSlug = $user->slug;
 
         if ($username !== $expectedSlug) {
             $baseRoute = $request->routeIs('account.admin.update') ? 'account.admin' : 'account';
@@ -88,7 +87,7 @@ class AccountController extends Controller
         // Update session name
         session(['name' => $user->name]);
 
-        $newSlug   = Str::slug($user->name);
+        $newSlug   = $user->slug;
         $baseRoute = $request->routeIs('account.admin.update') ? 'account.admin' : 'account';
 
         return redirect()
@@ -105,8 +104,14 @@ class AccountController extends Controller
             return redirect()->route('login')->with('error', 'Please login first.');
         }
 
-        $user = User::findOrFail(session('user_id'));
-        $expectedSlug = Str::slug($user->name);
+        $user         = User::findOrFail(session('user_id'));
+        $expectedSlug = $user->slug;
+
+        if ($username !== $expectedSlug) {
+            $baseRoute = $request->routeIs('account.admin.delete') ? 'account.admin' : 'account';
+
+            return redirect()->route($baseRoute, ['username' => $expectedSlug]);
+        }
 
         $data = $request->validate([
             'password_confirmation' => ['required', 'string'],
@@ -116,7 +121,6 @@ class AccountController extends Controller
             return back()->with('error', 'Incorrect password.');
         }
 
-        // Delete user + logout
         $user->delete();
         session()->flush();
 

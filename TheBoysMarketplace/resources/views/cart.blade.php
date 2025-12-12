@@ -45,7 +45,7 @@
                     <div style="flex:0 0 90px;">
                         <a href="{{ route('products.show.user', ['username' => $userSlug, 'id' => $product->id]) }}"
                         class="ratio ratio-1x1 d-block">
-                            <img src="{{ $product->image }}"
+                            <img src="{{ $product->image_url }}"
                                 alt="{{ $product->name }}"
                                 class="w-100 h-100"
                                 style="object-fit:cover;border-radius:0.5rem;">

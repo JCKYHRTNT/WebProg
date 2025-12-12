@@ -20,7 +20,7 @@
         <div class="col-md-5">
             <div class="ratio ratio-4x3">
                 <img
-                    src="{{ asset($product->image) }}"
+                    src="{{ $product->image_url }}"
                     alt="{{ $product->name }}"
                     class="w-100 h-100"
                     style="object-fit:cover;"

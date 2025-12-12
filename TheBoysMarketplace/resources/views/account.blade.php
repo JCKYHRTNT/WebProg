@@ -3,14 +3,8 @@
 @section('title', 'Account – The Boys')
 
 @php
-    use Illuminate\Support\Str;
-
     /** @var \App\Models\User $user */
-    $isAdmin      = session('role') === 'admin';
-    $slug         = Str::slug($user->name);
-    $profileImage = $user->profpic
-        ? asset($user->profpic)
-        : asset('images/default_avatar.png'); // create this or change path
+    $isAdmin = session('role') === 'admin';
 @endphp
 
 @section('content')
@@ -99,7 +93,7 @@
                 border:2px solid #e5e7eb;
                 background:#f3f4f6;
             ">
-                <img src="{{ $profileImage }}"
+                <img src="{{ $user->profile_image_url }}"
                      alt="Profile picture"
                      class="w-100 h-100"
                      style="object-fit:cover;">

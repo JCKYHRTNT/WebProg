@@ -34,4 +34,18 @@ class User extends Authenticatable
     {
         return $this->hasOne(Cart::class);
     }
+
+    public function getSlugAttribute(): string
+    {
+        return \Illuminate\Support\Str::slug($this->name);
+    }
+
+    public function getProfileImageUrlAttribute(): string
+    {
+        if ($this->profpic && file_exists(public_path($this->profpic))) {
+            return asset($this->profpic);
+        }
+
+        return asset('images/default_avatar.jpg');
+    }
 }

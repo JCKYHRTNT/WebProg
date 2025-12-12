@@ -12,9 +12,8 @@
 @section('content')
 
     <style>
-        /* Shared product-card sizing (same as admin) */
         .tb-product-card {
-            min-height: 340px;   /* keep in sync with admin page */
+            min-height: 340px;
             display: flex;
             flex-direction: column;
         }
@@ -150,7 +149,7 @@
                                 }}"
                                class="ratio ratio-4x3 d-block">
                                 <img
-                                    src="{{ $product['image'] }}"
+                                    src="{{ $product->image_url }}"
                                     alt="{{ $product['name'] }}"
                                     class="w-100 h-100"
                                     style="object-fit:cover;"
