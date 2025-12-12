@@ -7,7 +7,6 @@ use App\Models\Category;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -76,8 +75,8 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
-        $sessionName  = session('name');
-        $expectedSlug = Str::slug($sessionName);
+        $admin        = User::findOrFail(session('user_id'));
+        $expectedSlug = $admin->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('admin.user', [
@@ -97,7 +96,8 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
-        $expectedSlug = Str::slug(session('name'));
+        $admin        = User::findOrFail(session('user_id'));
+        $expectedSlug = $admin->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('admin.products.show', [
@@ -123,8 +123,8 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
-        $sessionName  = session('name');
-        $expectedSlug = Str::slug($sessionName);
+        $admin        = User::findOrFail(session('user_id'));
+        $expectedSlug = $admin->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('admin.crud', [
@@ -163,8 +163,8 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
-        $sessionName  = session('name');
-        $expectedSlug = Str::slug($sessionName);
+        $currentAdmin = User::findOrFail(session('user_id'));
+        $expectedSlug = $currentAdmin->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('admin.crud', [
@@ -176,8 +176,6 @@ class AdminController extends Controller
             'user_id'          => ['required', 'exists:users,id'],
             'current_password' => ['required', 'string'],
         ]);
-
-        $currentAdmin = User::findOrFail(session('user_id'));
 
         // Verify current admin password
         if (!Hash::check($data['current_password'], $currentAdmin->password)) {
@@ -193,10 +191,8 @@ class AdminController extends Controller
         $user->role = 'admin';
         $user->save();
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.crud', ['username' => $slug])
+            ->route('admin.crud', ['username' => $currentAdmin->slug])
             ->with('success', 'User promoted to admin.');
     }
 
@@ -209,8 +205,8 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
-        $sessionName  = session('name');
-        $expectedSlug = Str::slug($sessionName);
+        $currentAdmin = User::findOrFail(session('user_id'));
+        $expectedSlug = $currentAdmin->slug;
 
         if ($username !== $expectedSlug) {
             return redirect()->route('admin.crud', [
@@ -222,8 +218,6 @@ class AdminController extends Controller
             'user_id'          => ['required', 'exists:users,id'],
             'current_password' => ['required', 'string'],
         ]);
-
-        $currentAdmin = User::findOrFail(session('user_id'));
 
         // Verify current admin password
         if (!Hash::check($data['current_password'], $currentAdmin->password)) {
@@ -243,16 +237,20 @@ class AdminController extends Controller
         $user->role = 'user';
         $user->save();
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.crud', ['username' => $slug])
+            ->route('admin.crud', ['username' => $currentAdmin->slug])
             ->with('success', 'Admin has been demoted to user.');
     }
 
     // ===== PRODUCT CRUD =====
     public function storeProduct(Request $request, string $username)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $admin = User::findOrFail(session('user_id'));
+
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
             'price'       => ['required', 'integer', 'min:0'],
@@ -264,10 +262,8 @@ class AdminController extends Controller
 
         Product::create($data);
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.user', ['username' => $slug])
+            ->route('admin.user', ['username' => $admin->slug])
             ->with('status', 'Product created.');
     }
 
@@ -278,6 +274,12 @@ class AdminController extends Controller
 
     public function updateProduct(Request $request, string $username, Product $product)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $admin = User::findOrFail(session('user_id'));
+
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
             'price'       => ['required', 'integer', 'min:0'],
@@ -289,37 +291,43 @@ class AdminController extends Controller
 
         $product->update($data);
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.products.show', ['username' => $slug, 'product' => $product->id])
+            ->route('admin.products.show', ['username' => $admin->slug, 'product' => $product->id])
             ->with('status', 'Product updated.');
     }
 
     public function destroyProduct(string $username, Product $product)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $admin = User::findOrFail(session('user_id'));
+
         $product->delete();
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.user', ['username' => $slug])
+            ->route('admin.user', ['username' => $admin->slug])
             ->with('status', 'Product deleted.');
     }
 
     // ===== CATEGORY CRUD =====
     public function storeCategory(Request $request, string $username)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $admin = User::findOrFail(session('user_id'));
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
         ]);
 
         Category::create($data);
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.crud', ['username' => $slug])
+            ->route('admin.crud', ['username' => $admin->slug])
             ->with('status', 'Category created.');
     }
 
@@ -332,6 +340,12 @@ class AdminController extends Controller
 
     public function updateCategory(Request $request, string $username, Category $category)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $admin = User::findOrFail(session('user_id'));
+
         $data = $request->validate([
             'name' => [
                 'required',
@@ -343,21 +357,23 @@ class AdminController extends Controller
 
         $category->update($data);
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.crud', ['username' => $slug])
+            ->route('admin.crud', ['username' => $admin->slug])
             ->with('status', 'Category updated.');
     }
 
     public function destroyCategory(string $username, Category $category)
     {
+        if (!session('user_id') || session('role') !== 'admin') {
+            return redirect()->route('login');
+        }
+
+        $admin = User::findOrFail(session('user_id'));
+
         $category->delete();
 
-        $slug = Str::slug(session('name'));
-
         return redirect()
-            ->route('admin.crud', ['username' => $slug])
+            ->route('admin.crud', ['username' => $admin->slug])
             ->with('status', 'Category deleted.');
     }
 }

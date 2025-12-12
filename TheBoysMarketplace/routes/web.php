@@ -58,6 +58,11 @@ Route::get('/u/{username}/account', [AccountController::class, 'userAccount'])
     ->middleware('auth.user')
     ->name('account');
 
+// User redirect from admin/crud
+Route::get('/u/{username}/admin', function ($username) {
+    return redirect()->route('home.user', ['username' => $username]);
+});
+
 // Admin account (view)
 Route::get('/a/{username}/account', [AccountController::class, 'adminAccount'])
     ->middleware('admin')
@@ -80,6 +85,11 @@ Route::post('/a/{username}/account/update', [AccountController::class, 'update']
 Route::post('/a/{username}/account/delete', [AccountController::class, 'destroy'])
     ->middleware('admin')
     ->name('account.admin.delete');
+
+// Admin redirect from cart
+Route::get('/a/{username}/cart', function ($username) {
+    return redirect()->route('admin.user', ['username' => $username]);
+});
 
 // Admin
 Route::middleware('admin')->group(function () {

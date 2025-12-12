@@ -32,11 +32,8 @@
                         MARKETPLACE
                     </span>
                     <h1 class="mt-2 mb-2" style="font-size:1.6rem;font-weight:600;">
-                        Welcome to The Boys
+                        Welcome to The Boys Marketplace
                     </h1>
-                    <p class="mb-0" style="font-size:0.9rem;max-width:420px;">
-                        Browse The Boys Marketplace.
-                    </p>
                 </div>
             </div>
         </div>

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -19,9 +18,10 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        'name'     => ['required', 'string', 'max:255'],
+        'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+        'password' => ['required', 'min:4', 'confirmed'],
+    ]);
 
         $user = User::where('email', $request->email)->first();
 
@@ -36,7 +36,7 @@ class LoginController extends Controller
             'role'    => $user->role,
         ]);
 
-        $slug = Str::slug($user->name);
+        $slug = $user->slug;
 
         if ($user->role === 'admin') {
             return redirect()

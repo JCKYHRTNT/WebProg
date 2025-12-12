@@ -14,7 +14,6 @@
 
 <header class="tb-header-fixed">
     <div class="tb-container">
-
         @php
             use Illuminate\Support\Str;
 
@@ -22,11 +21,9 @@
             $userSlug = $loggedIn ? Str::slug(session('name')) : null;
             $isAdmin  = $loggedIn && session('role') === 'admin';
 
-            // detect current URL context
             $onAdminContext = request()->is('a/*');
             $onUserContext  = request()->is('u/*');
 
-            // base URL for search/filter
             if ($onAdminContext && $loggedIn && $userSlug) {
                 $searchBaseUrl = url('/a/'.$userSlug);
             } elseif ($onUserContext && $loggedIn && $userSlug) {
@@ -34,18 +31,31 @@
             } else {
                 $searchBaseUrl = url('/');
             }
+
+            if ($loggedIn && $userSlug) {
+                if ($onUserContext) {
+                    $logoHref = route('home.user', ['username' => $userSlug]);
+                } elseif ($onAdminContext) {
+                    $logoHref = route('admin.user', ['username' => $userSlug]);
+                } else {
+                    $logoHref = $isAdmin
+                        ? route('admin.user', ['username' => $userSlug])
+                        : route('home.user', ['username' => $userSlug]);
+                }
+            } else {
+                // guest
+                $logoHref = route('home');
+            }
         @endphp
 
         {{-- Logo --}}
-        <div class="d-flex align-items-center mb-2" style="gap: 0.6rem;">
-            <a href="{{ url('/') }}" class="d-inline-flex align-items-center" style="gap:0.5rem;">
-                <img
-                    src="{{ asset('images/theboys_logo.jpg') }}"
-                    alt="The Boys Logo"
-                    style="height:42px;width:auto;border-radius:0.4rem;object-fit:cover;background:#0f172a;"
-                >
-            </a>
-        </div>
+        <a href="{{ $logoHref }}" class="d-inline-flex align-items-center" style="gap:0.5rem;">
+            <img
+                src="{{ asset('images/theboys_logo.jpg') }}"
+                alt="The Boys Logo"
+                style="height:42px;width:auto;border-radius:0.4rem;object-fit:cover;background:#0f172a;"
+            >
+        </a>
 
         <div class="d-flex flex-wrap align-items-center justify-content-between" style="gap:0.75rem;">
 

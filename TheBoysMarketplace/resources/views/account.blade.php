@@ -126,8 +126,8 @@
 
         @php
             $updateRoute = $isAdminPage
-                ? route('account.admin.update', ['username' => $slug])
-                : route('account.update', ['username' => $slug]);
+                ? route('account.admin.update', ['username' => $user->slug])
+                : route('account.update', ['username' => $user->slug]);
         @endphp
 
         <div id="editFormWrapper" class="mt-3 d-none" style="max-width:420px;">
@@ -193,8 +193,8 @@
 
         @php
             $deleteRoute = $isAdminPage
-                ? route('account.admin.delete', ['username' => $slug])
-                : route('account.delete', ['username' => $slug]);
+                ? route('account.admin.delete', ['username' => $user->slug])
+                : route('account.delete', ['username' => $user->slug]);
         @endphp
 
         <div id="deleteFormWrapper" class="mt-3 d-none" style="max-width:420px;">
@@ -235,19 +235,18 @@
     @if($isAdmin)
         <div class="mt-4" style="max-width:200px;">
             @if($isAdminPage)
-                <a href="{{ route('home.user', ['username' => $slug]) }}"
+                <a href="{{ route('home.user', ['username' => $user->slug]) }}"
                 class="tb-btn-account tb-btn-account-role">
                     User
                 </a>
             @else
-                <a href="{{ route('admin.user', ['username' => $slug]) }}"
+                <a href="{{ route('admin.user', ['username' => $user->slug]) }}"
                 class="tb-btn-account tb-btn-account-role">
                     Admin
                 </a>
             @endif
         </div>
     @endif
-
 </div>
 
 <script>
