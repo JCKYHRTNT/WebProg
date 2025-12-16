@@ -6,7 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\AccountController;
-
+use App\Http\Controllers\LanguageController;
 // Guest Home
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::redirect('/home', '/')->name('home.redirect');
@@ -141,11 +141,39 @@ Route::middleware('admin')->group(function () {
         ->name('admin.categories.destroy');
 });
 
+
 // Authentication
-Route::get('/login',  [LoginController::class, 'show'])->name('login');
-Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
-
-Route::get('/register',  [LoginController::class, 'showRegister'])->name('register');
-Route::post('/register', [LoginController::class, 'register'])->name('register.submit');
-
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+// Redirect /login -> /login/en
+Route::get('/login', function () {
+    return redirect()->route('login.locale', ['locale' => 'en']);
+})->name('login');
+
+// Localized login pages
+Route::get('/login/{locale}', [LoginController::class, 'show'])
+    ->whereIn('locale', ['en', 'id'])
+    ->name('login.locale');
+
+Route::post('/login/{locale}', [LoginController::class, 'login'])
+    ->whereIn('locale', ['en', 'id'])
+    ->name('login.submit');
+
+
+// Redirect /register -> /register/en
+Route::get('/register', function () {
+    return redirect()->route('register.locale', ['locale' => 'en']);
+})->name('register');
+
+// Localized register
+Route::get('/register/{locale}', [LoginController::class, 'showRegister'])
+    ->whereIn('locale', ['en', 'id'])
+    ->name('register.locale');
+
+Route::post('/register/{locale}', [LoginController::class, 'register'])
+    ->whereIn('locale', ['en', 'id'])
+    ->name('register.submit');
+
+    
+// Localization
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])
+    ->name('language.switch');

@@ -1,9 +1,11 @@
 @extends('layouts.master')
 
-@section('title', 'Login – The Boys')
+@section('title', __('login.page_title'))
 
 @section('content')
-
+@php
+    $currentLocale = request()->route('locale') ?? 'en';
+@endphp
 <style>
     .login-wrapper {
         display: flex;
@@ -25,12 +27,13 @@
     }
 
     .login-right {
-        flex: 1;
-        background: var(--tb-blue);
-        padding: 3rem 2rem;
-        color: white;
-        position: relative;
-    }
+    flex: 1;
+    background: var(--tb-blue);
+    padding: 3rem 2rem;
+    color: white;
+    position: relative;
+}
+
 
     .login-title {
         font-size: 1.6rem;
@@ -71,7 +74,6 @@
         font-weight: 600;
         color: #111827;
         margin-top: 0.5rem;
-        transition: 0.2s ease;
     }
 
     .login-button:hover {
@@ -96,6 +98,26 @@
         margin-bottom: 0.25rem;
         color: #e5e7eb;
     }
+    .language-switch {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.8rem;
+}
+
+.language-switch a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-left: 0.5rem;
+}
+
+.language-switch a.active {
+    opacity: 1;
+    text-decoration: underline;
+}
+
 </style>
 
 <div class="login-wrapper">
@@ -103,7 +125,7 @@
     {{-- LEFT SIDE --}}
     <div class="login-left">
         <div>
-            <h2 class="login-title">Login to your account</h2>
+            <h2 class="login-title">{{ __('login.title') }}</h2>
 
             <img src="{{ asset('images/login_side.png') }}"
                  alt="Login Illustration"
@@ -113,10 +135,24 @@
 
     {{-- RIGHT SIDE --}}
     <div class="login-right">
+<div class="language-switch">
+    <a href="{{ route('login.locale', ['locale' => 'en']) }}"
+       class="{{ $currentLocale === 'en' ? 'active' : '' }}">
+        EN
+    </a>
+    |
+    <a href="{{ route('login.locale', ['locale' => 'id']) }}"
+       class="{{ $currentLocale === 'id' ? 'active' : '' }}">
+        ID
+    </a>
+</div>
+
 
         <div class="text-center mb-4">
             <img src="{{ asset('images/the_boys_logo.jpg') }}" class="login-card-logo">
-            <h3 style="font-size:1.3rem;font-weight:600;margin:0;">THE BOYS</h3>
+            <h3 style="font-size:1.3rem;font-weight:600;margin:0;">
+                {{ __('login.brand') }}
+            </h3>
         </div>
 
         @if(session('error'))
@@ -125,20 +161,39 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login.submit') }}">
+        <form method="POST" action="{{ route('login.submit', ['locale' => app()->getLocale()]) }}">
+
             @csrf
 
-            <label class="login-label">Email</label>
-            <input type="email" name="email" class="login-input" placeholder="Your Email" value="{{ old('email') }}" required>
+            <label class="login-label">{{ __('login.email') }}</label>
+            <input
+                type="email"
+                name="email"
+                class="login-input"
+                placeholder="{{ __('login.email_placeholder') }}"
+                value="{{ old('email') }}"
+                required
+            >
 
-            <label class="login-label">Password</label>
-            <input type="password" name="password" class="login-input" placeholder="Your Password" required>
+            <label class="login-label">{{ __('login.password') }}</label>
+            <input
+                type="password"
+                name="password"
+                class="login-input"
+                placeholder="{{ __('login.password_placeholder') }}"
+                required
+            >
 
-            <button type="submit" class="login-button">Login</button>
+            <button type="submit" class="login-button">
+                {{ __('login.login_button') }}
+            </button>
         </form>
 
         <div class="login-footer text-center">
-            Don’t have an account? <a href="{{ route('register') }}" style="color:var(--tb-yellow);text-decoration:none;">Sign Up</a>
+            {{ __('login.no_account') }}
+            <a href="{{ route('register') }}" style="color:var(--tb-yellow);text-decoration:none;">
+                {{ __('login.sign_up') }}
+            </a>
         </div>
 
     </div>

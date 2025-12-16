@@ -12,11 +12,18 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
+        // Register route middleware aliases
         $middleware->alias([
             'auth.user' => \App\Http\Middleware\AuthUser::class,
             'admin'     => \App\Http\Middleware\Admin::class,
         ]);
+
+        // Register global web middleware
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->create();

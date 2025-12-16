@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Register – The Boys')
+@section('title', __('register.page_title'))
 
 @section('content')
 
@@ -71,7 +71,6 @@
         font-weight: 600;
         color: #111827;
         margin-top: 0.5rem;
-        transition: 0.2s ease;
     }
 
     .auth-button:hover {
@@ -96,14 +95,38 @@
         margin-bottom: 0.25rem;
         color: #e5e7eb;
     }
+
+    .language-switch {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 0.8rem;
+    }
+
+    .language-switch a {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        opacity: 0.7;
+        margin-left: 0.5rem;
+    }
+
+    .language-switch a.active {
+        opacity: 1;
+        text-decoration: underline;
+    }
 </style>
+
+@php
+    $currentLocale = request()->route('locale') ?? 'en';
+@endphp
 
 <div class="auth-wrapper">
 
     {{-- LEFT SIDE --}}
     <div class="auth-left">
         <div>
-            <h2 class="auth-title">Create a new account</h2>
+            <h2 class="auth-title">{{ __('register.title') }}</h2>
 
             <img src="{{ asset('images/login_side.png') }}"
                  alt="Register Illustration"
@@ -114,9 +137,23 @@
     {{-- RIGHT SIDE --}}
     <div class="auth-right">
 
+        <div class="language-switch">
+            <a href="{{ route('register.locale', ['locale' => 'en']) }}"
+               class="{{ $currentLocale === 'en' ? 'active' : '' }}">
+                EN
+            </a>
+            |
+            <a href="{{ route('register.locale', ['locale' => 'id']) }}"
+               class="{{ $currentLocale === 'id' ? 'active' : '' }}">
+                ID
+            </a>
+        </div>
+
         <div class="text-center mb-4">
             <img src="{{ asset('images/the_boys_logo.jpg') }}" class="auth-card-logo">
-            <h3 style="font-size:1.3rem;font-weight:600;margin:0;">THE BOYS</h3>
+            <h3 style="font-size:1.3rem;font-weight:600;margin:0;">
+                THE BOYS
+            </h3>
         </div>
 
         @if ($errors->any())
@@ -129,27 +166,49 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('register.submit') }}">
+        <form method="POST"
+              action="{{ route('register.submit', ['locale' => $currentLocale]) }}">
             @csrf
 
-            <label class="auth-label">Name</label>
-            <input type="text" name="name" class="auth-input" placeholder="Your Name" required>
+            <label class="auth-label">{{ __('register.name') }}</label>
+            <input type="text"
+                   name="name"
+                   class="auth-input"
+                   placeholder="{{ __('register.name_placeholder') }}"
+                   required>
 
-            <label class="auth-label">Email</label>
-            <input type="email" name="email" class="auth-input" placeholder="Your Email" required>
+            <label class="auth-label">{{ __('register.email') }}</label>
+            <input type="email"
+                   name="email"
+                   class="auth-input"
+                   placeholder="{{ __('register.email_placeholder') }}"
+                   required>
 
-            <label class="auth-label">Password</label>
-            <input type="password" name="password" class="auth-input" placeholder="Your Password" required>
+            <label class="auth-label">{{ __('register.password') }}</label>
+            <input type="password"
+                   name="password"
+                   class="auth-input"
+                   placeholder="{{ __('register.password_placeholder') }}"
+                   required>
 
-            <label class="auth-label">Confirm Password</label>
-            <input type="password" name="password_confirmation" class="auth-input" placeholder="Confirm Password" required>
+            <label class="auth-label">{{ __('register.confirm_password') }}</label>
+            <input type="password"
+                   name="password_confirmation"
+                   class="auth-input"
+                   placeholder="{{ __('register.confirm_password_placeholder') }}"
+                   required>
 
-            <button type="submit" class="auth-button">Sign Up</button>
+            <button type="submit" class="auth-button">
+                {{ __('register.button') }}
+            </button>
         </form>
 
         <div class="auth-footer text-center">
-            Already have an account?
-            <a href="{{ route('login') }}" style="color:var(--tb-yellow);text-decoration:none;">Login</a>
+            {{ __('register.already_have_account') }}
+            <a href="{{ route('login.locale', ['locale' => $currentLocale]) }}"
+               style="color:var(--tb-yellow);text-decoration:none;">
+                {{ __('register.login') }}
+            </a>
         </div>
 
     </div>
